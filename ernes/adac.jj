@@ -12,7 +12,7 @@
  }
 
 PARSER_BEGIN(adac)
-//package traductor;
+package traductor;
 
 public class adac {
     public static void main(String[] args) {
@@ -46,16 +46,33 @@ SKIP :
 |  "\n"
 |  "\t"
 |  "\r"
-|  < COMMENT: "--"(~[])+"\n" >
+|  < COMMENT: "--"(~[])+"\n" > 
 }
 
 TOKEN :
 {
- 	< #LETTER: (["a"-"z","A"-"Z"]) >
+  	
+  	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 | 	< #GBAJO: "_" >
 |   < #PYC: ";" >
-|   < #ID: < LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > 
+| 	< #TRUE: "true" >
+|   < #FALSE: "false" >
+| 	< #INT: "integer" >
+| 	< #CHAR: "character" >
+| 	< #BOOL: "boolean" >
+| 	< #IF: "if" >
+| 	< #WHILE: "while" >
+| 	< #ARRAY: "["(< DIGIT >)+"]" >
+| 	< #PROC: "procedure" >
+| 	< #FUNC: "function" >
+| 	< #VAL: "val" >
+| 	< #REF: "ref" >
+| 	< #varINT2: < INT >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
+| 	< #varCHAR2: < CHAR >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
+| 	< #varBOOL2: < BOOL >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
+| 	< #TYPE: (< INT >|< CHAR >|< BOOL >) >
+| 	< #PARAMS: ((< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))("; "(< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))* > 
 }
 
 TOKEN :
@@ -64,14 +81,11 @@ TOKEN :
  		{
  			//mostrar la información pedida
  		}
-|   < tINT: "integer" > { System.out.println("integer"); }
-|	< tBOOL: "boolean" > 
-|	< tCHAR: "character" >
-|   < tIF: "if" >
-|   < tWHILE: "while" >
-|   < varINT: < tINT >" "< ID >(", "< ID >)*< PYC > >
-|   < varCHAR: < tCHAR >" "< ID >(", "< ID >)*< PYC > >
-|   < varBOOL: < tBOOL >" "< ID >(", "< ID >)*< PYC > >
+| 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" >
+| 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { System.out.println("id"); }
+|   < declareVAR: (< varINT2 >|< varCHAR2 >|< varBOOL2 >)< PYC > >
+| 	< tPROC: < PROC >" "< ID >(" ("< PARAMS >")")?" is" >
+| 	< tFUNC: < FUNC >" "< TYPE >" "< ID >" ("(< PARAMS >)?") is" >
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void S () : 
@@ -80,7 +94,7 @@ void S () :
 }
 {
 	( 
-		< tBEGIN > | < tBOOL > | < tCHAR > | < tINT > | < tIF > | < tWHILE > | < varINT >
+		< tBEGIN > | < declareVAR > | < ID > | < tFUNC > | < tPROC > | < STRING >
 	)+
 	< EOF >
 }
