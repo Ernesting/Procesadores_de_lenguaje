@@ -39,6 +39,12 @@ public class adac {
     }
 }
 PARSER_END(adac)
+TOKEN_MGR_DECLS:
+{
+  static void showInfo(Token e, String info) {
+    System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
+     }
+}
 //------------ descripción del AL
 SKIP :
 {
@@ -55,24 +61,23 @@ TOKEN :
   	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 | 	< #GBAJO: "_" >
-|   < #PYC: ";" >
+//|   < #PYC: ";" >
 | 	< #TRUE: "true" >
 |   < #FALSE: "false" >
 | 	< #INT: "integer" >
 | 	< #CHAR: "character" >
 | 	< #BOOL: "boolean" >
-| 	< #IF: "if" >
-| 	< #WHILE: "while" >
+//| 	< #WHILE: "while" >
 | 	< #ARRAY: "["(< DIGIT >)+"]" >
-| 	< #PROC: "procedure" >
-| 	< #FUNC: "function" >
+//| 	< #PROC: "procedure" >
+//| 	< #FUNC: "function" >
 | 	< #VAL: "val" >
 | 	< #REF: "ref" >
 | 	< #varINT2: < INT >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
 | 	< #varCHAR2: < CHAR >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
 | 	< #varBOOL2: < BOOL >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
-| 	< #TYPE: (< INT >|< CHAR >|< BOOL >) >
-| 	< #PARAMS: ((< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))("; "(< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))* > 
+//| 	< #TYPE: (< INT >|< CHAR >|< BOOL >) >
+| 	< #PARAMS: ((< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))("; "(< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))* >
 }
 
 TOKEN :
@@ -81,11 +86,33 @@ TOKEN :
  		{
  			//mostrar la información pedida
  		}
-| 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" >
-| 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { System.out.println("id"); }
-|   < declareVAR: (< varINT2 >|< varCHAR2 >|< varBOOL2 >)< PYC > >
+| 	< IF: "if" > { }
+| 	< RET: "return" >
+| 	< ELSE: "else" >
+| 	< WHILE: "while" >
+| 	< DO: "do" >
+| 	< AP: "(" >
+| 	< CP: ")" >
+| 	< PYC: ";" >
+| 	< PUTL: "put_line" >
+| 	< PUT: "put" >
+| 	< CMP: ("<="|"<"|">"|"=>"|"="|"<>") >
+| 	< NUMBER: ["1"-"9"](< DIGIT >)* >  { showInfo(matchedToken, "constante entera");}
+//| 	< EXPR: (< NUMBER >|< ID >) >
+| 	< OPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
+| 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
+| 	< TYPE: (< INT >|< CHAR >|< BOOL >) >
+//|   < declareVAR: (< varINT2 >|< varCHAR2 >|< varBOOL2 >)< PYC > >
+| 	< WRITE: (< PUTL >|< PUT >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC > > 
 | 	< tPROC: < PROC >" "< ID >(" ("< PARAMS >")")?" is" >
 | 	< tFUNC: < FUNC >" "< TYPE >" "< ID >" ("(< PARAMS >)?") is" >
+| 	< FUNC: "function" >
+| 	< PROC: "procedure" >
+//| 	< ASIG: < ID >" "< OPAS >" "(< ID >| < EXPR >)< PYC > >
+|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) >
+| 	< GET: "get" >
+| 	< END: "end" >
+| 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void S () : 
@@ -94,7 +121,17 @@ void S () :
 }
 {
 	( 
-		< tBEGIN > | < declareVAR > | < ID > | < tFUNC > | < tPROC > | < STRING >
+		< tBEGIN >
+		| < TYPE >< ID >(", "< ID >)*< PYC >
+		| < FUNC >< TYPE >< ID >
+		| < WHILE >< COND >< DO >
+		| < tPROC >
+		| < STRING >
+		| < RET >(< ID >|< NUMBER >)< PYC >
+		| < END >
+		| < ID >< OPAS >(< ID >| < NUMBER >)< PYC >
+		| (< PUT >|< PUTL >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC >
+		| < GET >"("< ID >")"< PYC >
 	)+
 	< EOF >
 }
