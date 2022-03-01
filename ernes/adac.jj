@@ -52,7 +52,7 @@ SKIP :
 |  "\n"
 |  "\t"
 |  "\r"
-|  < COMMENT: "--"(~[])+"\n" > 
+|  < COMMENT: "--"(~[])+ > 
 }
 
 TOKEN :
@@ -85,33 +85,35 @@ TOKEN :
  	< tBEGIN: "begin" >
  		{
  			//mostrar la información pedida
+			showInfo(matchedToken, "palabra reservada");
  		}
-| 	< IF: "if" > { }
-| 	< RET: "return" >
-| 	< ELSE: "else" >
-| 	< WHILE: "while" >
-| 	< DO: "do" >
-| 	< AP: "(" >
-| 	< CP: ")" >
-| 	< PYC: ";" >
-| 	< PUTL: "put_line" >
-| 	< PUT: "put" >
-| 	< CMP: ("<="|"<"|">"|"=>"|"="|"<>") >
+| 	< IF: "if" > { showInfo(matchedToken, "operador if");}
+| 	< RET: "return" > { showInfo(matchedToken, "operador return");}
+| 	< ELSE: "else" > { showInfo(matchedToken, "operador else");}
+| 	< WHILE: "while" > { showInfo(matchedToken, "operador while");}
+| 	< DO: "do" > { showInfo(matchedToken, "operador do");}
+| 	< AP: "(" > { showInfo(matchedToken, "abrir parentesis");}
+| 	< CP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
+| 	< COMA: "," > { showInfo(matchedToken, "coma");}
+| 	< PYC: ";" > { showInfo(matchedToken, "punto y coma");}
+| 	< PUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
+| 	< PUT: "put" > { showInfo(matchedToken, "operador put");}
+| 	< CMP: ("<="|"<"|">"|"=>"|"="|"<>") >{ showInfo(matchedToken, "comparador");}
 | 	< NUMBER: ["1"-"9"](< DIGIT >)* >  { showInfo(matchedToken, "constante entera");}
 //| 	< EXPR: (< NUMBER >|< ID >) >
 | 	< OPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
 | 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
-| 	< TYPE: (< INT >|< CHAR >|< BOOL >) >
+| 	< TYPE: (< INT >|< CHAR >|< BOOL >) > { showInfo(matchedToken, "tipo de dato");}
 //|   < declareVAR: (< varINT2 >|< varCHAR2 >|< varBOOL2 >)< PYC > >
-| 	< WRITE: (< PUTL >|< PUT >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC > > 
+//| 	< WRITE: (< PUTL >|< PUT >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC > > 
 | 	< tPROC: < PROC >" "< ID >(" ("< PARAMS >")")?" is" >
 | 	< tFUNC: < FUNC >" "< TYPE >" "< ID >" ("(< PARAMS >)?") is" >
-| 	< FUNC: "function" >
-| 	< PROC: "procedure" >
+| 	< FUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
+| 	< PROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
 //| 	< ASIG: < ID >" "< OPAS >" "(< ID >| < EXPR >)< PYC > >
-|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) >
-| 	< GET: "get" >
-| 	< END: "end" >
+|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) > 
+| 	< GET: "get" > { showInfo(matchedToken, "palabra reservada");}
+| 	< END: "end" > { showInfo(matchedToken, "palabra reservada");}
 | 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
@@ -122,15 +124,16 @@ void S () :
 {
 	( 
 		< tBEGIN >
-		| < TYPE >< ID >(", "< ID >)*< PYC >
+		| < TYPE >< ID >(< COMA >< ID >)*< PYC >
 		| < FUNC >< TYPE >< ID >
 		| < WHILE >< COND >< DO >
 		| < tPROC >
 		| < STRING >
 		| < RET >(< ID >|< NUMBER >)< PYC >
 		| < END >
+		| < PROC >< ID >< AP >
 		| < ID >< OPAS >(< ID >| < NUMBER >)< PYC >
-		| (< PUT >|< PUTL >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC >
+		| (< PUTL >|< PUT >)< AP >(< STRING >|< ID >)(< COMA >(< STRING >|< ID >))*< CP >< PYC > 
 		| < GET >"("< ID >")"< PYC >
 	)+
 	< EOF >
