@@ -52,7 +52,6 @@ SKIP :
 |  "\n"
 |  "\t"
 |  "\r"
-|  < COMMENT: "--"(~[])+ > 
 }
 
 TOKEN :
@@ -77,7 +76,7 @@ TOKEN :
 | 	< #varCHAR2: < CHAR >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
 | 	< #varBOOL2: < BOOL >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
 //| 	< #TYPE: (< INT >|< CHAR >|< BOOL >) >
-| 	< #PARAMS: ((< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))("; "(< VAL >|< REF >)" "(< varINT2 >|< varCHAR2 >|< varBOOL2 >))* >
+|   < #PRUEBA: < IF >>
 }
 
 TOKEN :
@@ -95,26 +94,31 @@ TOKEN :
 | 	< AP: "(" > { showInfo(matchedToken, "abrir parentesis");}
 | 	< CP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
 | 	< COMA: "," > { showInfo(matchedToken, "coma");}
+| 	< MOD: "mod" > { showInfo(matchedToken, "operador mod"); }
 | 	< PYC: ";" > { showInfo(matchedToken, "punto y coma");}
 | 	< PUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
 | 	< PUT: "put" > { showInfo(matchedToken, "operador put");}
+| 	< IS: "is" > { showInfo(matchedToken, "operador is"); }
+| 	< THEN: "then" > { showInfo(matchedToken, "operador then"); }  
 | 	< CMP: ("<="|"<"|">"|"=>"|"="|"<>") >{ showInfo(matchedToken, "comparador");}
+| 	< COMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); } 
 | 	< NUMBER: ["1"-"9"](< DIGIT >)* >  { showInfo(matchedToken, "constante entera");}
 //| 	< EXPR: (< NUMBER >|< ID >) >
 | 	< OPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
 | 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
 | 	< TYPE: (< INT >|< CHAR >|< BOOL >) > { showInfo(matchedToken, "tipo de dato");}
-//|   < declareVAR: (< varINT2 >|< varCHAR2 >|< varBOOL2 >)< PYC > >
-//| 	< WRITE: (< PUTL >|< PUT >)"("(< STRING >|< ID >)(","(< STRING >|< ID >))*")"< PYC > > 
-| 	< tPROC: < PROC >" "< ID >(" ("< PARAMS >")")?" is" >
-| 	< tFUNC: < FUNC >" "< TYPE >" "< ID >" ("(< PARAMS >)?") is" >
+| 	< tARRAY: < ARRAY > >
+
+| 	< PTYPE: (< VAL >|< REF >) > { showInfo(matchedToken, "paso de parametro");}
 | 	< FUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
 | 	< PROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
-//| 	< ASIG: < ID >" "< OPAS >" "(< ID >| < EXPR >)< PYC > >
-|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) > 
 | 	< GET: "get" > { showInfo(matchedToken, "palabra reservada");}
-| 	< END: "end" > { showInfo(matchedToken, "palabra reservada");}
+| 	< END: "end" > { showInfo(matchedToken, "palabra reservada"); }
 | 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
+//| 	< ASIG: < ID >" "< OPAS >" "(< ID >| < EXPR >)< PYC > >
+|	< EXPR1: ((< ID >(< tARRAY >)?)|< NUMBER >|< ID >< AP >((< ID >(< tARRAY >)?|< NUMBER >)(< COMA >|(< ID >(< tARRAY >)?|< NUMBER >))*)?< CP >) > 
+|	< EXPR: (< AP >< EXPR1 ><CP >)|< EXPR1 > > { showInfo(matchedToken, "expresion");}
+|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) > 
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void S () : 
@@ -124,17 +128,20 @@ void S () :
 {
 	( 
 		< tBEGIN >
-		| < TYPE >< ID >(< COMA >< ID >)*< PYC >
-		| < FUNC >< TYPE >< ID >
+		| < COMMENT > 
+		| < TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*< PYC >
 		| < WHILE >< COND >< DO >
-		| < tPROC >
 		| < STRING >
 		| < RET >(< ID >|< NUMBER >)< PYC >
 		| < END >
-		| < PROC >< ID >< AP >
-		| < ID >< OPAS >(< ID >| < NUMBER >)< PYC >
+		| < IF >< COND >< THEN >
+		| < ID >< OPAS >< EXPR >< PYC >
+		| < ELSE >
+		| < PROC >< ID >(< AP >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*< CP >)?< IS >
+		| < FUNC >< TYPE >< ID >< AP >(< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*)?< CP >< IS >
 		| (< PUTL >|< PUT >)< AP >(< STRING >|< ID >)(< COMA >(< STRING >|< ID >))*< CP >< PYC > 
-		| < GET >"("< ID >")"< PYC >
+		| < GET >< AP >< ID >(< tARRAY >)?< CP >< PYC >
+		
 	)+
 	< EOF >
 }
