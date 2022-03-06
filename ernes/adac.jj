@@ -77,6 +77,7 @@ TOKEN :
 | 	< #varBOOL2: < BOOL >" "< ID >(< ARRAY >)?(", "< ID >(< ARRAY >)?)* >
 //| 	< #TYPE: (< INT >|< CHAR >|< BOOL >) >
 |   < #PRUEBA: < IF >>
+| 	< plus: "+" > { showInfo(matchedToken, "operador suma");}
 }
 
 TOKEN :
@@ -85,7 +86,12 @@ TOKEN :
  		{
  			//mostrar la información pedida
 			showInfo(matchedToken, "palabra reservada");
- 		}
+		}
+| 	< SPACE: (" ")* >
+| 	< OP : "div"|"mod"|"+"|"*"|"-" > { showInfo(matchedToken, "operador");}
+| 	< OR: "or" >
+| 	< AND: "and" >
+| 	< TF: < TRUE >|< FALSE > > { showInfo(matchedToken, "valor booleano");}
 | 	< IF: "if" > { showInfo(matchedToken, "operador if");}
 | 	< RET: "return" > { showInfo(matchedToken, "operador return");}
 | 	< ELSE: "else" > { showInfo(matchedToken, "operador else");}
@@ -94,15 +100,14 @@ TOKEN :
 | 	< AP: "(" > { showInfo(matchedToken, "abrir parentesis");}
 | 	< CP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
 | 	< COMA: "," > { showInfo(matchedToken, "coma");}
-| 	< MOD: "mod" > { showInfo(matchedToken, "operador mod"); }
 | 	< PYC: ";" > { showInfo(matchedToken, "punto y coma");}
 | 	< PUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
 | 	< PUT: "put" > { showInfo(matchedToken, "operador put");}
 | 	< IS: "is" > { showInfo(matchedToken, "operador is"); }
 | 	< THEN: "then" > { showInfo(matchedToken, "operador then"); }  
-| 	< CMP: ("<="|"<"|">"|"=>"|"="|"<>") >{ showInfo(matchedToken, "comparador");}
+| 	< CMP: ("<="|"<"|">"|">="|"="|"<>") >{ showInfo(matchedToken, "comparador");}
 | 	< COMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); } 
-| 	< NUMBER: ["1"-"9"](< DIGIT >)* >  { showInfo(matchedToken, "constante entera");}
+| 	< NUMBER: ["1"-"9"](< DIGIT >)*|"0" >  { showInfo(matchedToken, "constante entera");}
 //| 	< EXPR: (< NUMBER >|< ID >) >
 | 	< OPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
 | 	< STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
@@ -114,11 +119,26 @@ TOKEN :
 | 	< PROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
 | 	< GET: "get" > { showInfo(matchedToken, "palabra reservada");}
 | 	< END: "end" > { showInfo(matchedToken, "palabra reservada"); }
+|	< FUNCTION: < ID >< SPACE >< AP >< SPACE >((< ID >|< NUMBER >)< SPACE >(< COMA ><SPACE >(< ID >|< NUMBER >))*)?< SPACE >< CP > > { showInfo(matchedToken, "funcion");}
+| 	< COND2: < AP ><SPACE >< COND >< SPACE >(< SPACE >(< OR >|< AND >)< SPACE >< AP ><SPACE >< COND >< SPACE >< CP >)*< SPACE >< CP >(< SPACE >(< OR >|< AND >)< SPACE >< AP ><SPACE >< COND >< SPACE >< CP >)*|< COND > >
+| 	< COND: (< NUMBER >|< ID >|< FUNCTION >)(< SPACE >< CMP >< SPACE >(< NUMBER >|< ID >|< FUNCTION >))*| < AP >< SPACE >(< NUMBER >|< ID >|< FUNCTION >)(< SPACE >< CMP >< SPACE >(< NUMBER >|< ID >|< FUNCTION >)< SPACE >)*< CP > >
+//| 	< EXPR: (< NUMBER >|< ID >|< FUNCTION >)>
+| 	< EXPR1: (< ID >|< NUMBER >|< FUNCTION >)(< SPACE >< OP >< SPACE >(< ID >|< NUMBER >|< FUNCTION >))* > 
+| 	< EXPR2: < AP > (< ID >|< NUMBER >|< FUNCTION >)< SPACE >< OP >< SPACE >(< ID >|< NUMBER >|< FUNCTION >)(< SPACE >< OP >< SPACE >(< ID >|< NUMBER >|< FUNCTION >))*< CP > > 
+| 	< char2: "'" ("\\" ~[] | ~["\"","\\"] ) "'" >
+| 	< int2char: "int2char"< SPACE >< AP >< NUMBER >< CP > >
+| 	< char2int: "char2int"< SPACE >< AP >< char2 >< CP > >
+
+
 | 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 //| 	< ASIG: < ID >" "< OPAS >" "(< ID >| < EXPR >)< PYC > >
-|	< EXPR1: ((< ID >(< tARRAY >)?)|< NUMBER >|< ID >< AP >((< ID >(< tARRAY >)?|< NUMBER >)(< COMA >|(< ID >(< tARRAY >)?|< NUMBER >))*)?< CP >) > 
-|	< EXPR: (< AP >< EXPR1 ><CP >)|< EXPR1 > > { showInfo(matchedToken, "expresion");}
-|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) > 
+///|	< EXPR1: ((< ID >(< tARRAY >)?)|(< NUMBER >)|(< ID >< AP >((< ID >(< tARRAY >)?|< NUMBER >)(< COMA >|(< ID >(< tARRAY >)?|< NUMBER >))*)?< CP >)) > 
+///|	< EXPR: (< AP >< EXPR1 ><CP >)|< EXPR1 > > { showInfo(matchedToken, "expresion");}
+
+//|	< TERMINO: (< ID >|< NUMBER >|< FUNCTION >)(< plus >(< ID >|< NUMBER >|< FUNCTION >))* >
+//| 	< EXPR: < TERMINO >< EXPR2 > >
+//| 	< EXPR2: (< plus >< TERMINO >)* >
+//|	< COND: (< ID >|< NUMBER >)" "(< CMP >)" "(< ID >|< NUMBER >) >
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void S () : 
@@ -130,16 +150,16 @@ void S () :
 		< tBEGIN >
 		| < COMMENT > 
 		| < TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*< PYC >
-		| < WHILE >< COND >< DO >
+		| < WHILE >< COND2 >< DO >
 		| < STRING >
-		| < RET >(< ID >|< NUMBER >)< PYC >
+		| < RET >(< ID >|< NUMBER >|< TF >)< PYC >
 		| < END >
-		| < IF >< COND >< THEN >
-		| < ID >< OPAS >< EXPR >< PYC >
+		| < IF >< COND2 >< THEN >
+		| < ID >< OPAS >(< NUMBER >|< ID >|< FUNCTION >|<EXPR1 >)< PYC >
 		| < ELSE >
 		| < PROC >< ID >(< AP >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*< CP >)?< IS >
 		| < FUNC >< TYPE >< ID >< AP >(< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*)?< CP >< IS >
-		| (< PUTL >|< PUT >)< AP >(< STRING >|< ID >)(< COMA >(< STRING >|< ID >))*< CP >< PYC > 
+		| (< PUTL >|< PUT >)< AP >(< STRING >|< ID >|< int2char >|< char2int >)(< COMA >(< STRING >|< ID >|< int2char >|< char2int >))*< CP >< PYC > 
 		| < GET >< AP >< ID >(< tARRAY >)?< CP >< PYC >
 		
 	)+
