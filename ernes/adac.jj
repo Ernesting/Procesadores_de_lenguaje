@@ -46,7 +46,7 @@ TOKEN_MGR_DECLS:
      }
 }
 //------------ descripción del AL
-<*> SKIP :
+SKIP :
 {
    " "
 |  "\n"
@@ -91,8 +91,8 @@ TOKEN :
 | 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
 | 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
 | 	< tCMP: ("<="|"<"|">"|">="|"="|"<>") >{ showInfo(matchedToken, "operador comparacion");}
-| 	< tCOMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); } 
-| 	< tNUMBER: ["1"-"9"](< DIGIT >)*|"0" >  { showInfo(matchedToken, "constante entera");}
+| 	< tCOMMENT: "--"(~["\n","\r"])*"\n" > { showInfo(matchedToken, "comment"); } 
+| 	< tNUMBER: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
 | 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
 | 	< tSTRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
 | 	< tTYPE: (< INT >|< CHAR >|< BOOL >) > { showInfo(matchedToken, "tipo de dato");}
