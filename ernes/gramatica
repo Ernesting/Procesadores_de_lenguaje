@@ -1,0 +1,24 @@
+
+
+
+
+
+
+
+
+
+		
+		/*| < PROC >< ID >(< AP >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*< CP >)?< IS >
+		| < FUNC >< TYPE >< ID >< AP >(< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*(< PYC >< PTYPE >< TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*)*)?< CP >< IS >
+		| (< GET >|< DATO >)< AP >< ID >(< tARRAY >)?< CP >< PYC >
+		| < TYPE >< ID >(< tARRAY >)?(< COMA >< ID >(< tARRAY >)?)*< PYC >
+		//hasta aqui estan bien 100%
+		| (< PUTL >|< PUT >)< AP >(< STRING >|< ID >|< int2char >|< char2int >)(< COMA >(< STRING >|< ID >|< int2char >|< char2int >))*< CP >< PYC >
+		
+		| < char2 ><PYC >
+		//| < WHILE >< COND2 >< DO >
+		| < STRING >
+		| < RET >(< ID >|< NUMBER >|< TF >)< PYC >
+		//| < IF >< COND2 >< THEN >
+		//| < ID >< OPAS >(< NUMBER >|< ID >|< FUNCTION >|<EXPR1 >)< PYC >
+		*/
