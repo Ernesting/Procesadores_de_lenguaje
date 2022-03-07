@@ -1,6 +1,6 @@
 //*****************************************************************
 // File:   adac.jj
-// Author: Adrian Arribas Mateo y Ernesto Bielsa Gracia 798799 
+// Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
 // Date:   Marzo 2022
 // Coms:   Un tutorial sobre el análisis léxico con javacc
 //         https://javacc.github.io/javacc/tutorials/token-manager.html
@@ -72,7 +72,7 @@ TOKEN :
  			//mostrar la información pedida
 			showInfo(matchedToken, "palabra reservada");
 		}
-| 	< tOP : "div"|"mod"|"+"|"*"|"-" > { showInfo(matchedToken, "operador");}
+| 	< tCOMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); }
 | 	< tBOP: "or"|"and" >
 | 	< TF: "true"|"false" > { showInfo(matchedToken, "valor booleano");}
 | 	< tIF: "if" > { showInfo(matchedToken, "operador if");}
@@ -91,7 +91,7 @@ TOKEN :
 | 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
 | 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
 | 	< tCMP: ("<="|"<"|">"|">="|"="|"<>") >{ showInfo(matchedToken, "operador comparacion");}
-| 	< tCOMMENT: "--"(~["\n","\r"])*"\n" > { showInfo(matchedToken, "comment"); } 
+| 	< tOP : "div"|"mod"|"+"|"*"|"-" > { showInfo(matchedToken, "operador");}
 | 	< tNUMBER: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
 | 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
 | 	< tSTRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
@@ -116,11 +116,11 @@ void S () :
 {
 	( 
 		< tBEGIN >
-		|< tOP >| < tBOP >| < TF >|< tIF >|< tRET >|< tELSE >|< tWHILE >|< tDO >
+ 		|< tCOMMENT >| < tBOP >| < TF >|< tIF >|< tRET >|< tELSE >|< tWHILE >|< tDO >
 		|< tAP >|< tCP >|< tAC >|< tCC >|< tCOMA >|< tPYC >|< tPUTL >|< tPUT >
-		|< tIS >|< tTHEN >|< tCMP >|< tCOMMENT >|< tNUMBER >|< tOPAS >|< tSTRING >
+		|< tIS >|< tTHEN >|< tCMP >|< tNUMBER >|< tOPAS >|< tSTRING >
 		|< tTYPE >|< tPTYPE >|< tFUNC >|< tPROC >|< tGET >|< tDATO >|< tEND >
-		|< tSCHAR >|< tI2C >|< tC2I >|< ID >|< ERROR >
+		|< tSCHAR >|< tI2C >|< tC2I >|< ID >|< ERROR >|< tOP >
 	)+
 	< EOF >
 }
