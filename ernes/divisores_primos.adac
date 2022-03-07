@@ -1,0 +1,55 @@
+--divisores primos de un numero
+procedure divisores_primos is
+	integer num;
+------------------------------------
+function boolean esPrimo(val integer a) is
+	integer x;
+begin
+	x := 2;
+	--No es primo
+   if((a=0) or (a=1) or (a=4)) then
+		return false;
+	end
+	while(x<a) do
+		if(a mod x = 0) then
+			return false;
+		end
+		x := x+1;
+	end
+	--Es primo
+	return true;
+end
+--------------------------------------
+procedure divPrimos(val integer num) is
+	integer i;
+begin
+	i := 2;
+	while(num>1) do
+		if(esPrimo(i)) then
+			if(num mod i = 0) then
+				num := num div i;
+				put(" ", i);
+			else
+				i := i+1;
+			end
+		else
+			i:= i+1;
+		end
+	end
+	put_line(" ");
+end
+----------------------------------------
+begin
+	put_line ("Este programa descompone el numero introducido en factores primos");
+	put_line ("Ejemplo: 434 = 2*7*31");
+	put("Introduce un numero(>0): ");
+    get(num);
+    while num <= 0 do
+       put_line("El numero debe ser positivo.");
+       put("Introduce un numero(>0): ");
+       get(num);
+    end
+    put("Factorizacion en numeros primos de ",num);
+    put(":");
+    divPrimos(num);
+end

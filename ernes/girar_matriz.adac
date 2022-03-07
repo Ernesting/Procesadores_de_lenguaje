@@ -1,0 +1,97 @@
+--girar_matriz
+procedure numeros_balanceados is
+	integer matriz[1000];
+	integer numF; 
+	integer numC;
+	integer contF;
+	integer contC;
+	integer valor;
+	integer rotacion;
+---------------------------------------
+function integer sitio(val integer numF, numC, tam) is
+begin
+	--calcula el lugar donde se situa la componente dado un numero de fila, columna y tamaño
+	return ((((numF-1) * tam) + numC)-1);
+end
+---------------------------------------
+procedure colocar(ref integer matriz[1000]; val integer numF, numC, tam, valor) is
+begin
+	--coloca el valor deseado en la fila y columna indicadas
+	matriz[sitio(numF, numC, tam)] := valor;
+end
+---------------------------------------
+function integer comp(ref integer matriz[1000]; val integer numF, numC, tam) is
+begin
+	--devuelve el valor guardado en la componente que está en la fila y columna indicadas
+	return matriz[sitio(numF, numC, tam)];
+end
+---------------------------------------
+procedure rotar90(ref integer matriz[1000]; val integer numF, numC) is
+	integer aux;
+	integer i;
+	integer j;
+begin
+	aux := comp(1, 1, numC);
+	i := 1;
+	while i<=numF do
+		j := 1;
+		while j<=numC do
+			
+	aux=comp
+end
+---------------------------------------
+procedure crear_matriz(ref integer matriz[1000]; val integer numF, numC) is
+	integer contF;
+	integer contC;
+begin
+	contF := 1;
+   while contF<=numF do
+   	contC := 1;
+   	while contC<=numC do
+   		put("Introduce componente de la fila ", contF);
+   		put(" y la columna ", contC);
+   		put(":");
+   		get(valor);
+   		colocar(matriz, contF, contC, numC, valor);
+   		contC := contC+1;
+   	end
+   	contF := contF+1;
+   end
+end
+----------------------------------------
+begin
+	put_line ("Este programa rota una matriz la matriz introducida los grados indicados");
+	put("Introduce el numero de filas de la matriz(>0): ");
+   get(numF);
+   while numF <= 0 do
+      put_line("El numero debe ser positivo.");
+      put("Introduce el numero de filas de la matriz(>0): ");
+      get(numF);
+   end
+   put("Introduce el numero de columnas de la matriz(>0): ");
+   get(numC);
+   while numC <= 0 do
+      put_line("El numero debe ser positivo.");
+      put("Introduce el numero de columnas de la matriz(>0): ");
+      get(numC);
+   end
+   crear_matriz(matriz, numF, numC);
+   put_line("La matriz introducida es la siguiente: ");
+   contF := 1;
+   while contF<=numF do
+   	contC := 1;
+   	while contC<=numC do
+   		put(" ", comp(matriz, contF, contC, numC));
+   		contC := contC+1;
+   	end
+   	put_line(" ");
+   	contF := contF+1;
+   end
+   put("Introduce el numero de grados que deseas rotar la matriz (0, 90, 180, 270, 360): ");
+   get(rotacion);
+   while ((rotacion<>0) or (rotacion<>90) or (rotacion<>180) or (rotacion<>270) or (rotacion<>360)) do
+      put_line("El numero de grados debe ser igual a uno de los anteriores");
+      put("Introduce el numero de grados que deseas rotar la matriz (0, 90, 180, 270, 360): ");
+      get(rotacion);
+   end
+end
