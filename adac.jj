@@ -1,8 +1,7 @@
-xd
 //*****************************************************************
 // File:   adac.jj
-// Author: ...........
-// Date:   ...........
+// Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
+// Date:   Marzo 2022
 // Coms:   Un tutorial sobre el análisis léxico con javacc
 //         https://javacc.github.io/javacc/tutorials/token-manager.html
 //*****************************************************************
@@ -40,6 +39,12 @@ public class adac {
     }
 }
 PARSER_END(adac)
+TOKEN_MGR_DECLS:
+{
+  static void showInfo(Token e, String info) {
+    System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
+     }
+}
 //------------ descripción del AL
 SKIP :
 {
@@ -47,17 +52,17 @@ SKIP :
 |  "\n"
 |  "\t"
 |  "\r"
-|  < COMMENT: "--"(~[])+"\n" >
 }
 
 TOKEN :
 {
- 	< #LETTER: (["a"-"z","A"-"Z"]) >
+  	
+  	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 | 	< #GBAJO: "_" >
-|   < #PYC: ";" >
-| 	< #ID: (~tIF, ~tWHILE, ~tINT, ~tBOOL, ~tCHAR) >
-| 	< #ID: ([((< LETTER >)+(< DIGIT >)*(< GBAJO >)?)*, ((< GBAJO >)(< LETTER >)+(< DIGIT >)*)*, ((< GBAJO >)(< LETTER >)*(< DIGIT >)+)*]) >
+| 	< #INT: "integer" >
+| 	< #CHAR: "character" >
+| 	< #BOOL: "boolean" >
 }
 
 TOKEN :
@@ -65,15 +70,43 @@ TOKEN :
  	< tBEGIN: "begin" >
  		{
  			//mostrar la información pedida
- 		}
-|   < tINT: "integer" >
-|	< tBOOL: "boolean" >
-|	< tCHAR: "character" >
-|   < tIF: "if" >
-|   < tWHILE: "while" >
-| 	< varINT: (< tINT >)" "(< ID >)(< PYC >) | (< tINT >)" "((< ID >)", ")+(< ID >)(< PYC >) >
-|   < varCHAR: (< tCHAR >)" ""'"(< ID >)"'"(< PYC >) | (< tCHAR >)" "((< ID >)", ")+(< ID >)(< PYC >) >
-|   < varBOOL: (< tBOOL >)" "(< ID >)(< PYC >) | (< tBOOL >)" "((< ID >)", ")+(< ID >)(< PYC >) >
+			showInfo(matchedToken, "palabra reservada");
+		}
+| 	< tCOMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); }
+| 	< tBOP: "or"|"and" >
+| 	< TF: "true"|"false" > { showInfo(matchedToken, "valor booleano");}
+| 	< tIF: "if" > { showInfo(matchedToken, "operador if");}
+| 	< tRET: "return" > { showInfo(matchedToken, "operador return");}
+| 	< tELSE: "else" > { showInfo(matchedToken, "operador else");}
+| 	< tWHILE: "while" > { showInfo(matchedToken, "operador while");}
+| 	< tDO: "do" > { showInfo(matchedToken, "operador do");}
+| 	< tAP: "(" > { showInfo(matchedToken, "abrir parentesis");}
+| 	< tCP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
+| 	< tAC: "[" > { showInfo(matchedToken, "abrir corchete");}
+| 	< tCC: "]" > { showInfo(matchedToken, "cerrar corchete");}
+| 	< tCOMA: "," > { showInfo(matchedToken, "coma");}
+| 	< tPYC: ";" > { showInfo(matchedToken, "punto y coma");}
+| 	< tPUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
+| 	< tPUT: "put" > { showInfo(matchedToken, "operador put");}
+| 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
+| 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
+| 	< tCMP: ("<="|"<"|">"|">="|"="|"<>") >{ showInfo(matchedToken, "operador comparacion");}
+| 	< tOP : "div"|"mod"|"+"|"*"|"-" > { showInfo(matchedToken, "operador");}
+| 	< tNUMBER: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
+| 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
+| 	< tSTRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
+| 	< tTYPE: (< INT >|< CHAR >|< BOOL >) > { showInfo(matchedToken, "tipo de dato");}
+| 	< tPTYPE: "val"|"ref" > { showInfo(matchedToken, "paso de parametro");}
+| 	< tFUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
+| 	< tPROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
+| 	< tGET: "get" > { showInfo(matchedToken, "palabra reservada");}
+| 	< tDATO: "dato" > { showInfo(matchedToken, "palabra reservada");}
+| 	< tEND: "end" > { showInfo(matchedToken, "palabra reservada"); }
+| 	< tSCHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
+| 	< tI2C: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
+| 	< tC2I: "char2int" > { showInfo(matchedToken, "palabra reservada"); }
+| 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
+| 	< ERROR: (~["\n","\r"])+"\n" > { System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:"); }
 }
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void S () : 
@@ -82,7 +115,12 @@ void S () :
 }
 {
 	( 
-		< tBEGIN > | < tBOOL > | < tCHAR >
+		< tBEGIN >
+ 		|< tCOMMENT >| < tBOP >| < TF >|< tIF >|< tRET >|< tELSE >|< tWHILE >|< tDO >
+		|< tAP >|< tCP >|< tAC >|< tCC >|< tCOMA >|< tPYC >|< tPUTL >|< tPUT >
+		|< tIS >|< tTHEN >|< tCMP >|< tNUMBER >|< tOPAS >|< tSTRING >
+		|< tTYPE >|< tPTYPE >|< tFUNC >|< tPROC >|< tGET >|< tDATO >|< tEND >
+		|< tSCHAR >|< tI2C >|< tC2I >|< ID >|< ERROR >|< tOP >
 	)+
 	< EOF >
 }
