@@ -2,7 +2,7 @@
 // File:   adac.jj
 // Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
 // Date:   Marzo 2022
-// Coms:   Un tutorial sobre el an√°lisis l√©xico con javacc
+// Coms:   Un tutorial sobre el an·lisis lÈxico con javacc
 //         https://javacc.github.io/javacc/tutorials/token-manager.html
 //*****************************************************************
 
@@ -25,7 +25,7 @@ public class adac {
 			else { //entrada desde fichero en args[0]
 	            parser = new adac(new java.io.FileInputStream(args[0])); 
 			}
-			parser.S(); //invoca s√≠mbolo inicial de la gram√°tica
+			parser.programa(); //invoca sÌmbolo inicial de la gram·tica
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -45,14 +45,20 @@ TOKEN_MGR_DECLS:
     System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
      }
 }
-//------------ descripci√≥n del AL
+//------------ descripciÛn del AL
 SKIP :
 {
    " "
 |  "\n"
 |  "\t"
 |  "\r"
+|  "\r\n"
 }
+
+SPECIAL_TOKEN: {
+	< COMMENT: "--"(~["\n"])*"\n" >
+}
+
 
 TOKEN :
 {
@@ -60,25 +66,28 @@ TOKEN :
   	< #LETTER: (["a"-"z","A"-"Z"]) >
 |	< #DIGIT: ["0"-"9"] >
 | 	< #GBAJO: "_" >
-| 	< #INT: "integer" >
-| 	< #CHAR: "character" >
-| 	< #BOOL: "boolean" >
 }
 
 TOKEN :
 {
  	< tBEGIN: "begin" >
  		{
- 			//mostrar la informaci√≥n pedida
+ 			//mostrar la informaciÛn pedida
 			showInfo(matchedToken, "palabra reservada");
 		}
-| 	< tCOMMENT: "--"(~["\n"])*"\n" > { showInfo(matchedToken, "comment"); }
-| 	< tBOP: "or"|"and" >
-| 	< TF: "true"|"false" > { showInfo(matchedToken, "valor booleano");}
+| 	< tINT: "integer" >
+| 	< tCHAR: "character" >
+| 	< tBOOL: "boolean" >
+| 	< tOR: "or" >
+|	< tAND: "and" >
+| 	< tNOT: "not" >
+| 	< tTRUE: "true" >
+|	< tFALSE: "false" > { showInfo(matchedToken, "valor booleano");}
 | 	< tIF: "if" > { showInfo(matchedToken, "operador if");}
 | 	< tRET: "return" > { showInfo(matchedToken, "operador return");}
 | 	< tELSE: "else" > { showInfo(matchedToken, "operador else");}
 | 	< tWHILE: "while" > { showInfo(matchedToken, "operador while");}
+| 	< tSKIPLINE: "skip_line" >
 | 	< tDO: "do" > { showInfo(matchedToken, "operador do");}
 | 	< tAP: "(" > { showInfo(matchedToken, "abrir parentesis");}
 | 	< tCP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
@@ -90,37 +99,270 @@ TOKEN :
 | 	< tPUT: "put" > { showInfo(matchedToken, "operador put");}
 | 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
 | 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
-| 	< tCMP: ("<="|"<"|">"|">="|"="|"<>") >{ showInfo(matchedToken, "operador comparacion");}
-| 	< tOP : "div"|"mod"|"+"|"*"|"-" > { showInfo(matchedToken, "operador");}
-| 	< tNUMBER: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
+| 	< tLE: "<=" >
+|	< tL: "<" >
+|	< tG: ">" >
+|	< tGE: ">=" >
+|	< tEQ: "=" >
+|	< tNEQ: "<>" >{ showInfo(matchedToken, "operador comparacion");}
+| 	< tDIV: "div" >
+|	< tMOD: "mod" >
+|	< tPLUS: "+" >
+|	< tPROD: "*" >
+|	< tMINUS: "-" > { showInfo(matchedToken, "operador");}
+| 	< tCONST_INT: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
 | 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
-| 	< tSTRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
-| 	< tTYPE: (< INT >|< CHAR >|< BOOL >) > { showInfo(matchedToken, "tipo de dato");}
-| 	< tPTYPE: "val"|"ref" > { showInfo(matchedToken, "paso de parametro");}
+| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
+| 	< tVAL: "val" >
+|	< tREF: "ref" > { showInfo(matchedToken, "paso de parametro");}
 | 	< tFUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tPROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tGET: "get" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tDATO: "dato" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tEND: "end" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tSCHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
-| 	< tI2C: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tC2I: "char2int" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< ID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
-| 	< ERROR: (~["\n","\r"])+"\n" > { System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:"); }
+| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
+| 	< tINT2CHAR: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
+| 	< tCHAR2INT: "char2int" > { showInfo(matchedToken, "palabra reservada"); }
+| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 }
-//------------ S√≠mbolo inicial de la gram√°tica. Para an√°lisis l√©xico no hace falta m√°s
-void S () : 
+
+SPECIAL_TOKEN: {
+	< ERROR: (~[]) >
+		{
+			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:"); 
+		}
+}
+
+//------------ SÌmbolo inicial de la gram·tica. Para an·lisis lÈxico no hace falta m·s
+void programa () : 
 {
 
 }
 {
 	( 
-		< tBEGIN >
- 		|< tCOMMENT >| < tBOP >| < TF >|< tIF >|< tRET >|< tELSE >|< tWHILE >|< tDO >
-		|< tAP >|< tCP >|< tAC >|< tCC >|< tCOMA >|< tPYC >|< tPUTL >|< tPUT >
-		|< tIS >|< tTHEN >|< tCMP >|< tNUMBER >|< tOPAS >|< tSTRING >
-		|< tTYPE >|< tPTYPE >|< tFUNC >|< tPROC >|< tGET >|< tDATO >|< tEND >
-		|< tSCHAR >|< tI2C >|< tC2I >|< ID >|< ERROR >|< tOP >
+		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
 	)+
 	< EOF >
+}
+
+void declaracion_variables () :
+{
+
+}
+{
+	(	   declaracion() < tPYC >
+	)*
+}
+
+void declaracion () :
+{
+
+}
+{
+	(
+	   tipo_variable() lista_vars()
+	)
+}
+
+void tipo_variable () :
+{
+
+}
+{
+	(
+		< tINT > | < tCHAR > | < tBOOL >
+	)
+}
+
+void lista_vars () :
+{
+
+}
+{
+	(
+		variable() ( < tCOMA > variable() )*
+	)
+}
+
+void variable () :
+{
+
+}
+{
+	(
+	  LOOKAHEAD(2)
+		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+	)
+}
+
+void declaracion_procs_funcs () :
+{
+
+}
+{
+	(
+		declaracion_proc_func()
+	)*
+}
+
+void declaracion_funcion () :
+{
+
+}
+{
+	(
+		cabecera_funcion() declaracion_variables() bloque_sentencias()
+	)
+}
+
+void dec_parametros () :
+{
+
+}
+{
+	(
+		clase_parametros() tipo_variable() id_or_array() ( < tCOMA > id_or_array() ) *
+	)
+}
+
+void id_or_array () :
+{
+
+}
+{
+	( LOOKAHEAD(2)
+		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+	)
+}
+
+void instruccion () :
+{
+
+}
+{
+	( 
+		inst_leer() < tPYC >
+		| inst_saltar_linea() < tPYC >
+		| inst_escribir() < tPYC >
+		| inst_escribir_linea() < tPYC >
+		| LOOKAHEAD(2)
+			inst_invoc_proc() < tPYC >
+		| inst_asignacion() < tPYC >
+		| inst_seleccion()  < tPYC >
+		| inst_iteracion()
+		| inst_return() < tPYC > 
+	)
+}
+
+void inst_asignacion () :
+{
+
+}
+{
+	(
+	  asignable() < tOPAS > expresion()
+	)
+}
+
+void inst_iteracion () :
+{
+
+}
+{
+	( 
+		< tWHILE > expresion() < tDO > lista_instrucciones() < tEND > 
+	)
+}
+
+void lista_cero_o_mas_exps () :
+{
+
+}
+{
+	( 
+		lista_una_o_mas_exps() 
+	)?
+}
+
+void expresion () :
+{
+
+}
+{
+	( 
+		expresion_simple() (operador_relacional() expresion_simple() )? 
+	)
+}
+
+void operador_relacional () :
+{
+
+}
+{
+	( 
+		< tEQ >|< tL >|< tG >|< tLE >|< tGE >|< tNEQ > 
+	)
+}
+
+void expresion_simple () :
+{
+
+}
+{
+	( 
+		( < tPLUS >| < tMINUS >)? termino() (operador_aditivo() termino() )*
+	)
+}
+
+void termino () :
+{
+
+}
+{
+	( 
+		factor() ( operador_multiplicativo() factor() ) * 
+	)
+}
+
+void operador_multiplicativo () :
+{
+
+}
+{
+	( 
+		< tPROD >|< tMOD >|< tDIV >|< tAND > 
+	)
+}
+
+void factor () :
+{
+
+}
+{
+	( 
+		< tNOT > factor()
+		| < tAP > expresion() < tCP >
+		| < tINT2CHAR > < tAP > expresion() < tCP >
+		| < tCHAR2INT >	< tAP > expresion() < tCP >
+		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() < tCP >
+		| LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+		| < tID >
+		| < tCONST_INT >
+		| < tCONST_CHAR >
+		| < tCONST_STRING >
+		| < tTRUE >
+		| < tFALSE >
+	)
+}
+
+//HASTA AQUI LA SEMANTICA
+
+void bloque_sentencias () :
+{
+
+}
+{
+	( 
+		< tPROD >|< tMOD >|< tDIV >|< tAND > 
+	)
 }
