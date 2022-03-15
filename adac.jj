@@ -140,7 +140,7 @@ void programa () :
 }
 {
 	( 
-		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
+		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() /*bloque_sentencias()*/
 	)+
 	< EOF >
 }
@@ -240,8 +240,9 @@ void instruccion () :
 
 }
 {
-	( 
-		inst_leer() < tPYC >
+	(
+	  < tRET >< tPYC >
+		/*inst_leer() < tPYC >
 		| inst_saltar_linea() < tPYC >
 		| inst_escribir() < tPYC >
 		| inst_escribir_linea() < tPYC >
@@ -250,11 +251,11 @@ void instruccion () :
 		| inst_asignacion() < tPYC >
 		| inst_seleccion()  < tPYC >
 		| inst_iteracion()
-		| inst_return() < tPYC > 
+		| inst_return() < tPYC >*/ 
 	)
 }
 
-void inst_asignacion () :
+/*void inst_asignacion () :
 {
 
 }
@@ -272,7 +273,7 @@ void inst_iteracion () :
 	( 
 		< tWHILE > expresion() < tDO > lista_instrucciones() < tEND > 
 	)
-}
+}*/
 
 void lista_cero_o_mas_exps () :
 {
@@ -363,6 +364,89 @@ void bloque_sentencias () :
 }
 {
 	( 
-		< tPROD >|< tMOD >|< tDIV >|< tAND > 
+		< tBEGIN > lista_instrucciones() < tEND >
+	)
+}
+
+void lista_instrucciones():
+{
+
+}
+{
+	(
+		instruccion()
+	)*
+}
+
+void declaracion_proc_func():
+{
+
+}
+{
+	(
+	  	LOOKAHEAD(2)
+		declaracion_funcion()
+		|declaracion_procedimiento()
+		
+	)
+}
+
+void declaracion_procedimiento():
+{
+
+}
+{
+  	(  	  cabecera_procedimiento() declaracion_variables() bloque_sentencias()
+	)
+}
+
+void cabecera_procedimiento():
+{
+
+}
+{
+  	(
+  	  < tPROC >< tID >< tIS >
+	)
+}
+
+void cabecera_funcion():
+{
+
+}
+{
+  	(
+  	  < tPROC > tipo_variable() < tID >< tAP >< tCP >< tIS >
+	)
+}
+
+
+void clase_parametros():
+{
+
+}
+{
+  	(
+  	  < tVAL >|< tREF >
+	)
+}
+
+void lista_una_o_mas_exps():
+{
+
+}
+{
+  	(
+  	  < tPROC >< tID >< tIS >
+	)
+}
+
+void operador_aditivo():
+{
+
+}
+{
+  	(
+  	  < tPROC >< tID >< tIS >
 	)
 }
