@@ -112,13 +112,12 @@ TOKEN :
 |	< tMINUS: "-" > { showInfo(matchedToken, "operador");}
 | 	< tCONST_INT: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
 | 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
-| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] )* "\"" > { showInfo(matchedToken, "constante string");}
+| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > { showInfo(matchedToken, "constante string");}
 | 	< tVAL: "val" >
 |	< tREF: "ref" > { showInfo(matchedToken, "paso de parametro");}
 | 	< tFUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tPROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tGET: "get" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tDATO: "dato" > { showInfo(matchedToken, "palabra reservada");}
 | 	< tEND: "end" > { showInfo(matchedToken, "palabra reservada"); }
 | 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
 | 	< tINT2CHAR: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
@@ -142,7 +141,7 @@ void programa () :
 	( 
 		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() /*bloque_sentencias()*/
 	)+
-	< EOF >
+	//< EOF >
 }
 
 void declaracion_variables () :
@@ -201,6 +200,7 @@ void declaracion_procs_funcs () :
 }
 {
 	(
+	  	LOOKAHEAD(2)
 		declaracion_proc_func()
 	)*
 }
@@ -220,8 +220,8 @@ void dec_parametros () :
 
 }
 {
-	(
-		clase_parametros() tipo_variable() id_or_array() ( < tCOMA > id_or_array() ) *
+	(	
+		clase_parametros() tipo_variable() id_or_array() ( < tPYC > id_or_array() ) *
 	)
 }
 
@@ -241,17 +241,16 @@ void instruccion () :
 }
 {
 	(
-	  < tRET >< tPYC >
-		/*inst_leer() < tPYC >
+		 inst_leer() < tPYC >
 		| inst_saltar_linea() < tPYC >
 		| inst_escribir() < tPYC >
 		| inst_escribir_linea() < tPYC >
-		| LOOKAHEAD(2)
+		/*| LOOKAHEAD(2)
 			inst_invoc_proc() < tPYC >
 		| inst_asignacion() < tPYC >
 		| inst_seleccion()  < tPYC >
 		| inst_iteracion()
-		| inst_return() < tPYC >*/ 
+		| inst_return() < tPYC >*/
 	)
 }
 
@@ -406,7 +405,7 @@ void cabecera_procedimiento():
 }
 {
   	(
-  	  < tPROC >< tID >< tIS >
+  	  < tPROC >< tID > < tAP > (dec_parametros()(< tCOMA > dec_parametros())*)? < tCP > < tIS >
 	)
 }
 
@@ -416,7 +415,7 @@ void cabecera_funcion():
 }
 {
   	(
-  	  < tPROC > tipo_variable() < tID >< tAP >< tCP >< tIS >
+  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tCOMA > dec_parametros())*)? < tCP >< tIS >
 	)
 }
 
@@ -448,5 +447,48 @@ void operador_aditivo():
 {
   	(
   	  < tPROC >< tID >< tIS >
+	)
+}
+
+void inst_leer() :
+{
+
+}
+{
+	(
+		< tGET > < tAP > id_or_array() < tCP >
+	)
+}
+
+
+void inst_saltar_linea() :
+{
+
+}
+{
+	(
+		< tSKIPLINE > < tAP > < tCP >
+	)
+}
+
+
+void inst_escribir() :
+{
+
+}
+{
+	(
+		< tPUT > < tAP > (factor() (< tCOMA > factor())*)? < tCP >
+	)
+}
+
+
+void inst_escribir_linea() :
+{
+
+}
+{
+	(
+		< tPUTL > < tAP > (factor() (< tCOMA > factor())*)? < tCP >
 	)
 }
