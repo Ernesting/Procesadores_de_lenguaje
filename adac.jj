@@ -139,9 +139,9 @@ void programa () :
 }
 {
 	( 
-		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() /*bloque_sentencias()*/
-	)+
-	//< EOF >
+		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
+	)
+	< EOF >
 }
 
 void declaracion_variables () :
@@ -221,7 +221,7 @@ void dec_parametros () :
 }
 {
 	(	
-		clase_parametros() tipo_variable() id_or_array() ( < tPYC > id_or_array() ) *
+		clase_parametros() tipo_variable() id_or_array() ( < tCOMA > id_or_array() ) *
 	)
 }
 
@@ -330,7 +330,7 @@ void operador_multiplicativo () :
 }
 {
 	( 
-		< tPROD >|< tMOD >|< tDIV >|< tAND > 
+		< tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
 	)
 }
 
@@ -405,7 +405,7 @@ void cabecera_procedimiento():
 }
 {
   	(
-  	  < tPROC >< tID > < tAP > (dec_parametros()(< tCOMA > dec_parametros())*)? < tCP > < tIS >
+  	  < tPROC >< tID > < tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP > < tIS >
 	)
 }
 
@@ -415,7 +415,7 @@ void cabecera_funcion():
 }
 {
   	(
-  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tCOMA > dec_parametros())*)? < tCP >< tIS >
+  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP >< tIS >
 	)
 }
 
