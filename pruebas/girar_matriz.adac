@@ -1,6 +1,7 @@
 --girar_matriz
 procedure numeros_balanceados is
 	integer matriz[1000];
+	integer vaux[1000];
 	integer numF; 
 	integer numC;
 	integer contF;
@@ -26,18 +27,42 @@ begin
 	return matriz[sitio(numF, numC, tam)];
 end
 ---------------------------------------
-procedure rotar90(ref integer matriz[1000]; val integer numF, numC) is
-	integer aux;
+function boolean esCuadrada(val integer numF, numC) is
+begin
+	--devuelve el valor guardado en la componente que está en la fila y columna indicadas
+	if numF=numC then
+		return true;
+	else 
+		return false;
+	end
+end
+---------------------------------------
+procedure extraerColum(ref integer matriz[1000], vaux[1000]; val integer numF, numC, tam) is
 	integer i;
 	integer j;
 begin
-	aux := comp(1, 1, numC);
+	i := numC;
+	j := numF;
+	while j>0 do
+		vaux[i] := comp(matriz, j, numC, tam);
+		j := j-1;
+		i := i+1;
+	end
+	i := 0;
+	while(i<50) do
+		put(" ", vaux[i]);
+		i := i+1;
+	end
+end
+----------------------------------------
+procedure rotar90(ref integer matriz[1000], vaux[1000]; val integer numF, numC) is
+	integer i;
+begin
 	i := 1;
-	while i<=numF do
-		j := 1;
-		while j<=numC do
-			
-	aux=comp
+	while i<=numC do
+		extraerColum(matriz, vaux, numF, i, numC);		
+		i := i+1;
+	end
 end
 ---------------------------------------
 procedure crear_matriz(ref integer matriz[1000]; val integer numF, numC) is
@@ -82,6 +107,18 @@ begin
    	contC := 1;
    	while contC<=numC do
    		put(" ", comp(matriz, contF, contC, numC));
+   		contC := contC+1;
+   	end
+   	put_line(" ");
+   	contF := contF+1;
+   end
+   rotar90(matriz, vaux, numF, numC);
+   put_line("La matriz resultante es la siguiente: ");
+   contF := 1;
+   while contF<=numF do
+   	contC := 1;
+   	while contC<=numC do
+   		put(" ", comp(vaux, contF, contC, numC));
    		contC := contC+1;
    	end
    	put_line(" ");
