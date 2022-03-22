@@ -245,16 +245,16 @@ void instruccion () :
 		| inst_saltar_linea() < tPYC >
 		| inst_escribir() < tPYC >
 		| inst_escribir_linea() < tPYC >
-		/*| LOOKAHEAD(2)
+		| LOOKAHEAD(2)
 			inst_invoc_proc() < tPYC >
 		| inst_asignacion() < tPYC >
-		| inst_seleccion()  < tPYC >
+		| inst_seleccion() 
 		| inst_iteracion()
-		| inst_return() < tPYC >*/
+		| inst_return() < tPYC >
 	)
 }
 
-/*void inst_asignacion () :
+void inst_asignacion () :
 {
 
 }
@@ -263,7 +263,7 @@ void instruccion () :
 	  asignable() < tOPAS > expresion()
 	)
 }
-
+/*
 void inst_iteracion () :
 {
 
@@ -310,7 +310,7 @@ void expresion_simple () :
 }
 {
 	( 
-		( < tPLUS >| < tMINUS >)? termino() (operador_aditivo() termino() )*
+		(operador_aditivo())? termino() (operador_aditivo() termino() )*
 	)
 }
 
@@ -436,7 +436,7 @@ void lista_una_o_mas_exps():
 }
 {
   	(
-  	  < tPROC >< tID >< tIS >
+  	  expresion() (< tCOMA > expresion())* 
 	)
 }
 
@@ -446,7 +446,7 @@ void operador_aditivo():
 }
 {
   	(
-  	  < tPROC >< tID >< tIS >
+  	  < tPLUS > | < tMINUS >
 	)
 }
 
@@ -456,7 +456,7 @@ void inst_leer() :
 }
 {
 	(
-		< tGET > < tAP > id_or_array() < tCP >
+		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* < tCP >
 	)
 }
 
@@ -478,7 +478,7 @@ void inst_escribir() :
 }
 {
 	(
-		< tPUT > < tAP > (factor() (< tCOMA > factor())*)? < tCP >
+		< tPUT > < tAP > expresion() (< tCOMA > expresion())* < tCP >
 	)
 }
 
@@ -489,6 +489,59 @@ void inst_escribir_linea() :
 }
 {
 	(
-		< tPUTL > < tAP > (factor() (< tCOMA > factor())*)? < tCP >
+		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? < tCP >
+	)
+}
+
+void inst_invoc_proc() :
+{
+
+}
+{
+	(
+		< tID > < tAP > lista_cero_o_mas_exps() < tCP >
+	)
+}
+
+
+void asignable () :
+{
+
+}
+{
+	(
+	  LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+	| < tID > 
+	)
+}
+
+void inst_seleccion():
+{
+
+}
+{
+	(
+	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? < tEND >
+	)
+}
+
+
+void inst_iteracion():
+{
+
+}
+{
+	(
+	 	< tWHILE > expresion() < tDO > lista_instrucciones() < tEND >
+	)
+}
+
+void inst_return():
+{
+
+}
+{
+	(
+	 	< tRET > expresion()
 	)
 }
