@@ -34,8 +34,19 @@ public class adac {
         	System.err.println("LEX_ERROR: " + e.getMessage());
         }
         catch (ParseException e) {
-        	System.err.println("SINT_ERROR: " + e.getMessage());
-        } 
+          	Token t;
+          	
+        	System.out.println("prueba"+ e.toString());
+         	do {
+   				t = getNextToken();
+   				System.out.print("ERROR LEXICO2: ");
+         	} while (t.kind !=tPYC  && t.kind!= EOF );
+        	//System.err.println("Svoid_ERROR: " + e.getMessage());
+        }
+        catch (Exception e) {
+			System.err.println("Finalizo traduccion por deteccion de error no controlado: \n\t" + e.getMessage());
+        }
+        
     }
 }
 PARSER_END(adac)
@@ -125,12 +136,13 @@ TOKEN :
 | 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 }
 
-SPECIAL_TOKEN: {
+/*SPECIAL_TOKEN: {
 	< ERROR: (~[]) >
 		{
-			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:"); 
+			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:");
+			 matchedToken.image = " "; 
 		}
-}
+}*/
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void programa () : 
