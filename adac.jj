@@ -2,7 +2,7 @@
 // File:   adac.jj
 // Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
 // Date:   Marzo 2022
-// Coms:   Un tutorial sobre el an·lisis lÈxico con javacc
+// Coms:   Un tutorial sobre el an√°lisis l√©xico con javacc
 //         https://javacc.github.io/javacc/tutorials/token-manager.html
 //*****************************************************************
 
@@ -13,6 +13,7 @@
 
 PARSER_BEGIN(adac)
 package traductor;
+import java.io.IOException;
 
 public class adac {
     public static void main(String[] args) {
@@ -25,7 +26,7 @@ public class adac {
 			else { //entrada desde fichero en args[0]
 	            parser = new adac(new java.io.FileInputStream(args[0])); 
 			}
-			parser.programa(); //invoca sÌmbolo inicial de la gram·tica
+			parser.programa(); //invoca s√≠mbolo inicial de la gram√°tica
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -34,14 +35,7 @@ public class adac {
         	System.err.println("LEX_ERROR: " + e.getMessage());
         }
         catch (ParseException e) {
-          	Token t;
-          	
-        	System.out.println("prueba"+ e.toString());
-         	do {
-   				t = getNextToken();
-   				System.out.print("ERROR LEXICO2: ");
-         	} while (t.kind !=tPYC  && t.kind!= EOF );
-        	//System.err.println("Svoid_ERROR: " + e.getMessage());
+        	System.err.println("Svoid_ERROR: " + e.getMessage());
         }
         catch (Exception e) {
 			System.err.println("Finalizo traduccion por deteccion de error no controlado: \n\t" + e.getMessage());
@@ -50,13 +44,31 @@ public class adac {
     }
 }
 PARSER_END(adac)
+
+JAVACODE
+void error_skipto() {
+  ParseException e = generateParseException();  // generate the exception object
+  System.out.println("ERROR SINTACTICO: TOKENS A ELIMINAR");  // print the error message
+  Token t;
+  // consume tokens all the way up to a token of "kind" - use a do-while loop
+  // rather than a while because the current token is the one immediately before
+  // the erroneous token (in our case the token immediately before what should
+  // have been "if"/"while".
+  t = getNextToken();
+  while (t.kind != tPYC && t.kind != tEND){
+	  System.out.println("("+t.beginLine+","+t.beginColumn+") Token eliminado: "+t.image);
+	   t = getNextToken();
+  }
+  System.out.println("Se ha llegado a tPYC o tEND");
+}
+
 TOKEN_MGR_DECLS:
 {
   static void showInfo(Token e, String info) {
     System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
      }
 }
-//------------ descripciÛn del AL
+//------------ descripci√≥n del AL
 SKIP :
 {
    " "
@@ -83,7 +95,7 @@ TOKEN :
 {
  	< tBEGIN: "begin" >
  		{
- 			//mostrar la informaciÛn pedida
+ 			//mostrar la informaci√≥n pedida
 			showInfo(matchedToken, "palabra reservada");
 		}
 | 	< tINT: "integer" >
@@ -136,15 +148,38 @@ TOKEN :
 | 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
 }
 
-/*SPECIAL_TOKEN: {
+SPECIAL_TOKEN: {
 	< ERROR: (~[]) >
 		{
 			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:");
 			 matchedToken.image = " "; 
 		}
-}*/
+}
 
-//------------ SÌmbolo inicial de la gram·tica. Para an·lisis lÈxico no hace falta m·s
+//------------ S√≠mbolo inicial de la gram√°tica. Para an√°lisis l√©xico no hace falta m√°s
+void prueba() throws IOException : {}{
+	(
+	ifstm()
+	|
+	whilestm()
+	|
+	error_skipto()
+	)*
+}
+
+void ifstm():{}{
+	<tIF> <tPYC>
+}
+
+
+void whilestm():{}{
+	<tWHILE> <tPYC>
+}
+
+
+
+
+
 void programa () : 
 {
 
@@ -153,7 +188,7 @@ void programa () :
 	( 
 		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
 	)
-	< EOF >
+	<EOF>
 }
 
 void declaracion_variables () :
@@ -161,7 +196,8 @@ void declaracion_variables () :
 
 }
 {
-	(	   declaracion() < tPYC >
+	(
+	   declaracion() punto_y_coma()
 	)*
 }
 
@@ -253,16 +289,16 @@ void instruccion () :
 }
 {
 	(
-		 inst_leer() < tPYC >
-		| inst_saltar_linea() < tPYC >
-		| inst_escribir() < tPYC >
-		| inst_escribir_linea() < tPYC >
+		 inst_leer() punto_y_coma()
+		| inst_saltar_linea() punto_y_coma()
+		| inst_escribir() punto_y_coma()
+		| inst_escribir_linea() punto_y_coma()
 		| LOOKAHEAD(2)
-			inst_invoc_proc() < tPYC >
-		| inst_asignacion() < tPYC >
+			inst_invoc_proc() punto_y_coma()
+		| inst_asignacion() punto_y_coma()
 		| inst_seleccion() 
 		| inst_iteracion()
-		| inst_return() < tPYC >
+		| inst_return() punto_y_coma()
 	)
 }
 
@@ -407,7 +443,8 @@ void declaracion_procedimiento():
 
 }
 {
-  	(  	  cabecera_procedimiento() declaracion_variables() bloque_sentencias()
+  	(
+  	  cabecera_procedimiento() declaracion_variables() bloque_sentencias()
 	)
 }
 
@@ -555,5 +592,14 @@ void inst_return():
 {
 	(
 	 	< tRET > expresion()
+	)
+}
+
+void punto_y_coma():{
+	
+}{
+	(
+		< tPYC >
+		| error_skipto()
 	)
 }
