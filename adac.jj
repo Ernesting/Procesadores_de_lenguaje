@@ -46,7 +46,7 @@ public class adac {
 PARSER_END(adac)
 
 JAVACODE
-void error_skipto() {
+void error_skipto(int kind) {
   ParseException e = generateParseException();  // generate the exception object
   System.out.println("ERROR SINTACTICO: TOKENS A ELIMINAR");  // print the error message
   Token t;
@@ -55,11 +55,10 @@ void error_skipto() {
   // the erroneous token (in our case the token immediately before what should
   // have been "if"/"while".
   t = getNextToken();
-  while (t.kind != tPYC && t.kind != tEND){
+  while (t.kind != kind){
 	  System.out.println("("+t.beginLine+","+t.beginColumn+") Token eliminado: "+t.image);
 	   t = getNextToken();
   }
-  System.out.println("Se ha llegado a tPYC o tEND");
 }
 
 TOKEN_MGR_DECLS:
@@ -157,29 +156,6 @@ SPECIAL_TOKEN: {
 }
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
-void prueba() throws IOException : {}{
-	(
-	ifstm()
-	|
-	whilestm()
-	|
-	error_skipto()
-	)*
-}
-
-void ifstm():{}{
-	<tIF> <tPYC>
-}
-
-
-void whilestm():{}{
-	<tWHILE> <tPYC>
-}
-
-
-
-
-
 void programa () : 
 {
 
@@ -411,7 +387,7 @@ void bloque_sentencias () :
 }
 {
 	( 
-		< tBEGIN > lista_instrucciones() < tEND >
+		< tBEGIN > lista_instrucciones() end()
 	)
 }
 
@@ -570,7 +546,7 @@ void inst_seleccion():
 }
 {
 	(
-	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? < tEND >
+	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? end()
 	)
 }
 
@@ -581,7 +557,7 @@ void inst_iteracion():
 }
 {
 	(
-	 	< tWHILE > expresion() < tDO > lista_instrucciones() < tEND >
+	 	< tWHILE > expresion() < tDO > lista_instrucciones() end()
 	)
 }
 
@@ -597,9 +573,20 @@ void inst_return():
 
 void punto_y_coma():{
 	
-}{
+}
+{
 	(
 		< tPYC >
-		| error_skipto()
+		| error_skipto(tPYC)
+	)
+}
+
+void end():{
+	
+}
+{
+	(
+		< tEND >
+		| error_skipto(tEND)
 	)
 }
