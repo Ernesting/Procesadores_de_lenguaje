@@ -93,10 +93,6 @@ TOKEN :
 TOKEN :
 {
  	< tBEGIN: "begin" >
- 		{
- 			//mostrar la información pedida
-			showInfo(matchedToken, "palabra reservada");
-		}
 | 	< tINT: "integer" >
 | 	< tCHAR: "character" >
 | 	< tBOOL: "boolean" >
@@ -104,47 +100,47 @@ TOKEN :
 |	< tAND: "and" >
 | 	< tNOT: "not" >
 | 	< tTRUE: "true" >
-|	< tFALSE: "false" > { showInfo(matchedToken, "valor booleano");}
-| 	< tIF: "if" > { showInfo(matchedToken, "operador if");}
-| 	< tRET: "return" > { showInfo(matchedToken, "operador return");}
-| 	< tELSE: "else" > { showInfo(matchedToken, "operador else");}
-| 	< tWHILE: "while" > { showInfo(matchedToken, "operador while");}
+|	< tFALSE: "false" > 
+| 	< tIF: "if" > 
+| 	< tRET: "return" > 
+| 	< tELSE: "else" > 
+| 	< tWHILE: "while" > 
 | 	< tSKIPLINE: "skip_line" >
-| 	< tDO: "do" > { showInfo(matchedToken, "operador do");}
-| 	< tAP: "(" > { showInfo(matchedToken, "abrir parentesis");}
-| 	< tCP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
-| 	< tAC: "[" > { showInfo(matchedToken, "abrir corchete");}
-| 	< tCC: "]" > { showInfo(matchedToken, "cerrar corchete");}
-| 	< tCOMA: "," > { showInfo(matchedToken, "coma");}
-| 	< tPYC: ";" > { showInfo(matchedToken, "punto y coma");}
-| 	< tPUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
-| 	< tPUT: "put" > { showInfo(matchedToken, "operador put");}
-| 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
-| 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
+| 	< tDO: "do" > 
+| 	< tAP: "(" > 
+| 	< tCP: ")" > 
+| 	< tAC: "[" > 
+| 	< tCC: "]" > 
+| 	< tCOMA: "," > 
+| 	< tPYC: ";" > 
+| 	< tPUTL: "put_line" > 
+| 	< tPUT: "put" > 
+| 	< tIS: "is" > 
+| 	< tTHEN: "then" >   
 | 	< tLE: "<=" >
 |	< tL: "<" >
 |	< tG: ">" >
 |	< tGE: ">=" >
 |	< tEQ: "=" >
-|	< tNEQ: "<>" >{ showInfo(matchedToken, "operador comparacion");}
+|	< tNEQ: "<>" >
 | 	< tDIV: "div" >
 |	< tMOD: "mod" >
 |	< tPLUS: "+" >
 |	< tPROD: "*" >
-|	< tMINUS: "-" > { showInfo(matchedToken, "operador");}
-| 	< tCONST_INT: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
-| 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
-| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > { showInfo(matchedToken, "constante string");}
+|	< tMINUS: "-" > 
+| 	< tCONST_INT: (< DIGIT >)+ >  
+| 	< tOPAS: ":=" >  
+| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > 
 | 	< tVAL: "val" >
-|	< tREF: "ref" > { showInfo(matchedToken, "paso de parametro");}
-| 	< tFUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tPROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tGET: "get" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tEND: "end" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
-| 	< tINT2CHAR: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tCHAR2INT: "char2int" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
+|	< tREF: "ref" > 
+| 	< tFUNC: "function" > 
+| 	< tPROC: "procedure" > 
+| 	< tGET: "get" > 
+| 	< tEND: "end" > 
+| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  
+| 	< tINT2CHAR: "int2char" > 
+| 	< tCHAR2INT: "char2int" > 
+| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > 
 }
 
 SPECIAL_TOKEN: {
@@ -164,7 +160,7 @@ void programa () :
 	( 
 		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
 	)
-	<EOF>
+	< EOF >
 }
 
 void declaracion_variables () :
@@ -214,7 +210,7 @@ void variable () :
 {
 	(
 	  LOOKAHEAD(2)
-		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
 	)
 }
 
@@ -255,7 +251,7 @@ void id_or_array () :
 }
 {
 	( LOOKAHEAD(2)
-		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
 	)
 }
 
@@ -365,11 +361,11 @@ void factor () :
 {
 	( 
 		< tNOT > factor()
-		| < tAP > expresion() < tCP >
-		| < tINT2CHAR > < tAP > expresion() < tCP >
-		| < tCHAR2INT >	< tAP > expresion() < tCP >
-		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() < tCP >
-		| LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+		| < tAP > expresion() cerrar_parentesis()
+		| < tINT2CHAR > < tAP > expresion() cerrar_parentesis()
+		| < tCHAR2INT >	< tAP > expresion() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
 		| < tID >
 		| < tCONST_INT >
 		| < tCONST_CHAR >
@@ -430,7 +426,7 @@ void cabecera_procedimiento():
 }
 {
   	(
-  	  < tPROC >< tID > < tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP > < tIS >
+  	  < tPROC >< tID > < tAP > (dec_parametros()(< tPYC > dec_parametros())*)? cerrar_parentesis() < tIS >
 	)
 }
 
@@ -440,7 +436,7 @@ void cabecera_funcion():
 }
 {
   	(
-  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP >< tIS >
+  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? cerrar_parentesis()< tIS >
 	)
 }
 
@@ -481,7 +477,7 @@ void inst_leer() :
 }
 {
 	(
-		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* < tCP >
+		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* cerrar_parentesis()
 	)
 }
 
@@ -492,7 +488,7 @@ void inst_saltar_linea() :
 }
 {
 	(
-		< tSKIPLINE > < tAP > < tCP >
+		< tSKIPLINE > < tAP > cerrar_parentesis()
 	)
 }
 
@@ -503,7 +499,7 @@ void inst_escribir() :
 }
 {
 	(
-		< tPUT > < tAP > expresion() (< tCOMA > expresion())* < tCP >
+		< tPUT > < tAP > expresion() (< tCOMA > expresion())* cerrar_parentesis()
 	)
 }
 
@@ -514,7 +510,7 @@ void inst_escribir_linea() :
 }
 {
 	(
-		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? < tCP >
+		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? cerrar_parentesis()
 	)
 }
 
@@ -524,7 +520,7 @@ void inst_invoc_proc() :
 }
 {
 	(
-		< tID > < tAP > lista_cero_o_mas_exps() < tCP >
+		< tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
 	)
 }
 
@@ -535,7 +531,7 @@ void asignable () :
 }
 {
 	(
-	  LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+	  LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
 	| < tID > 
 	)
 }
@@ -588,5 +584,25 @@ void end():{
 	(
 		< tEND >
 		| error_skipto(tEND)
+	)
+}
+
+void cerrar_corchete():{
+
+}
+{
+	(
+		< tCC >
+		| error_skipto(tCC)
+	)
+}
+
+void cerrar_parentesis():{
+
+}
+{
+	(
+		< tCP >
+		| error_skipto(tCP)
 	)
 }
