@@ -3,7 +3,7 @@ procedure primos_magnanimos is
 	integer num;
 ------------------------------------
 --funcion que devuelve true si y solo si
---el numero pasado como parámetro es primo
+--el numero pasado como parÃ¡metro es primo
 function boolean esPrimo(val integer a) is
 	integer x;
 begin
@@ -23,12 +23,12 @@ begin
 end
 --------------------------------------
 --funcion que devuelve el numero de cifras
---que tiene el numero pasado como parámetro
+--que tiene el numero pasado como parÃ¡metro
 function integer numCifras(val integer num) is
 	integer numC;
 begin
 	numC := 1;
-	while(num>10) do
+	while(num>=10) do
 		num := num div 10;
 		numC := numC+1;
 	end
@@ -38,9 +38,9 @@ end
 function integer elevar(val integer base, exp) is
 	integer resul;
 begin
-	resul := base;
-	while(exp>1) do
-		resul := base*base;
+	resul := 1;
+	while(exp>=1) do
+		resul := resul*base;
 		exp := exp-1;
 	end
 	return resul;
@@ -96,10 +96,8 @@ begin
        get(num);
     end
     if(comprobarParticion(num)=true) then
-    	put_line("El numero introducido está formado por primos magnanimos");
+    	put_line("El numero introducido estÃ¡ formado por primos magnanimos");
     else
-    	put_line("El numero introducido no está formado por primos magnanimos");
+    	put_line("El numero introducido no estÃ¡ formado por primos magnanimos");
     end
 end
-	
-	
