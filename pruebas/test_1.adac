@@ -3,7 +3,7 @@ procedure primos_magnanimos is
 	integer num;
 ------------------------------------
 --funcion que devuelve true si y solo si
---el numero pasado como parÃ¡metro es primo
+--el numero pasado como parametro es primo
 function boolean esPrimo(val integer a) is
 	integer x;
 begin
@@ -23,7 +23,7 @@ begin
 end
 --------------------------------------
 --funcion que devuelve el numero de cifras
---que tiene el numero pasado como parÃ¡metro
+--que tiene el numero pasado como parametro
 function integer numCifras(val integer num) is
 	integer numC;
 begin
@@ -35,6 +35,10 @@ begin
 	return numC;
 end
 --------------------------------------
+--funcion que devuelve el resultado
+--de elevar el segundo numero pasado
+--como parametro al primer numero
+--pasado como parametro
 function integer elevar(val integer base, exp) is
 	integer resul;
 begin
@@ -46,6 +50,8 @@ begin
 	return resul;
 end
 ---------------------------------------
+--funcion que devuelve true si y solo si las particiones
+--del numero pasado como parametro son todas ellas numeros primos
 function boolean comprobarParticion(val integer num) is
 	integer numC;
 	integer rep;
@@ -62,17 +68,14 @@ begin
 	else
 		rep := 1;
 		while rep<numC do
-			put_line("rep=",rep);
 			--Se hace la primera parte de la particion del numero
 			part1 := num div elevar(10,rep);
-			put_line("part1=",part1);
 			--Se hace la otra parte de la particion del numero
 			part2 := num mod elevar(10,rep);
-			put_line("part2=",part2);
 			--Comprobamos si las dos partes son primas
 			put(" ",part1);
-			put("+ ", part2);
-			put_line("= ", part1+part2);
+			put(" + ", part2);
+			put_line(" = ", part1+part2);
 			if(esPrimo(part1+part2)) then
 				rep := rep+1;
 			else 
@@ -96,8 +99,9 @@ begin
        get(num);
     end
     if(comprobarParticion(num)=true) then
-    	put_line("El numero introducido estÃ¡ formado por primos magnanimos");
+    	put_line("El numero introducido es un primo magnanimo");
     else
-    	put_line("El numero introducido no estÃ¡ formado por primos magnanimos");
+    	put_line("El numero introducido no es un primo magnanimo");
     end
 end
+	
