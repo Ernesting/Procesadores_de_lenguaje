@@ -433,7 +433,7 @@ void cabecera_procedimiento():
 void cabecera_funcion():
 {
 
-}
+}//
 {
   	(
   	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? cerrar_parentesis()< tIS >
