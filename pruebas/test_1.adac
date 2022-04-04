@@ -1,0 +1,102 @@
+--primos magnanimos
+procedure primos_magnanimos is
+	integer num;
+------------------------------------
+--funcion que devuelve true si y solo si
+--el numero pasado como parámetro es primo
+function boolean esPrimo(val integer a) is
+	integer x;
+begin
+	x := 2;
+	--No es primo
+   	if((a=0) or (a=1) or (a=4)) then
+		return false;
+	end
+	while(x<a) do
+		if(a mod x = 0) then
+			return false;
+		end
+		x := x+1;
+	end
+	--Es primo
+	return true;
+end
+--------------------------------------
+--funcion que devuelve el numero de cifras
+--que tiene el numero pasado como parámetro
+function integer numCifras(val integer num) is
+	integer numC;
+begin
+	numC := 1;
+	while(num>10) do
+		num := num div 10;
+		numC := numC+1;
+	end
+	return numC;
+end
+--------------------------------------
+function integer elevar(val integer base, exp) is
+	integer resul;
+begin
+	resul := base;
+	while(exp>1) do
+		resul := base*base;
+		exp := exp-1;
+	end
+	return resul;
+end
+---------------------------------------
+function boolean comprobarParticion(val integer num) is
+	integer numC;
+	integer rep;
+	integer part1;
+	integer part2;
+begin
+	numC := numCifras(num);
+	if(numC=1) then
+		if esPrimo(num)=true then
+			return true;
+		else
+			return false;
+		end
+	else
+		rep := 1;
+		while(rep<numC) do
+			--Se hace la primera parte de la particion del numero
+			part1 := num div elevar(10, rep);
+			--Se hace la otra parte de la particion del numero
+			part2 := num mod elevar(10,rep);
+			--Comprobamos si las dos partes son primas
+			put(" ",part1);
+			put("+ ", part2);
+			put_line("= ", part1+part2);
+			if(esPrimo(part1+part2)) then
+				rep := rep+1;
+			else 
+				--No son primos ninguno o solo uno de los dos
+				return false;
+			end
+		end
+		--En caso de que todas las particiones sean primas devuelve true
+		return true;
+	end
+end
+----------------------------------------
+begin
+	put_line ("Este programa comprueba que la suma de todas las particiones de un numero da como resultante un numero primo");
+	put_line ("Ejemplo: 4001. 4+001=5, 40+01=41, 400+1=401. Todos ellos son primos.");
+	put("Introduce un numero(>0): ");
+    get(num);
+    while num <= 0 do
+       put_line("El numero debe ser positivo.");
+       put("Introduce un numero(>0): ");
+       get(num);
+    end
+    if(comprobarParticion(num)=true) then
+    	put_line("El numero introducido está formado por primos magnanimos");
+    else
+    	put_line("El numero introducido no está formado por primos magnanimos");
+    end
+end
+	
+	

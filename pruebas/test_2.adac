@@ -1,0 +1,81 @@
+--numeros balanceados
+procedure numeros_balanceados is
+	integer num;
+------------------------------------
+--funcion que devuelve true si y solo si
+--el numero pasado como parámetro es primo
+function boolean esPrimo(val integer a) is
+	integer x;
+begin
+	x := 2;
+	--No es primo
+   if((a=0) or (a=1) or (a=4)) then
+		return false;
+	end
+	while(x<a) do
+		if(a mod x = 0) then
+			return false;
+		end
+		x := x+1;
+	end
+	--Es primo
+	return true;
+end
+--------------------------------------
+--funcion que devuelve el numero de divisores
+--que tiene el numero pasado como parámetro
+function integer numDivisoresPrimos(val integer num) is
+	integer numD;
+	integer i;
+begin
+	numD := 0;
+	i := 2;
+	while(num>1) do
+		if(esPrimo(i)) then
+			if(num mod i = 0) then
+				num := num div i;
+				numD := numD + 1;
+				put(" ", i);
+			else
+				i := i+1;
+			end
+		else
+			i:= i+1;
+		end
+	end
+	put_line(" ");
+	return numD;
+end
+---------------------------------------
+--funcion que devuelve true si y solo si
+--el número pasado como parámetro posee un número
+--par de divisores primos
+function boolean comprobarBalanceado(val integer num) is
+	integer numD;
+begin
+	numD := numDivisoresPrimos(num);
+	if(numD mod 2 = 0) then
+		return true;
+	else
+		return false;
+	end
+end
+----------------------------------------
+begin
+	put_line ("Este programa comprueba que el numero introducido es balanceado, es decir, el numero de divisores primos es par");
+	put_line ("Ejemplo: 24 = 2*2*2*3. Es balanceado porque tiene cuatro divisores primos.");
+	put("Introduce un numero(>0): ");
+    get(num);
+    while num <= 0 do
+       put_line("El numero debe ser positivo.");
+       put("Introduce un numero(>0): ");
+       get(num);
+    end
+    put("Divisores de ",num);
+    put(": ");
+    if(comprobarBalanceado(num)=true) then
+    	put_line("El numero introducido es balanceado");
+    else
+    	put_line("El numero introducido no es balanceado");
+    end
+end
