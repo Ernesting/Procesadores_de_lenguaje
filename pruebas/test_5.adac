@@ -1,0 +1,87 @@
+--Se dice que un punto p del plano euclideo domina a otro q cuando las coordenadas de p
+--son mayores o iguales que las de q (px >= qx y py >= qy) y ademas p <> q. Se dice que un punto p es
+--maximal en un conjunto de puntos C si no existe ningun punto q perteneciente a C que domine a p.¡
+procedure dominantes is
+integer x[10], y[10], inf, sup, i, aux;
+
+------------------------------------------------
+procedure intercambiar (ref integer y1, y2, x1, x2) is
+integer auxX, auxY;
+begin
+	auxX := x1;
+	x1 := x2;
+	x2 := auxX;
+	auxY := y1;
+	y1 := y2;
+	y2 := auxY;
+end
+------------------------------------------------
+function integer divide (ref integer y[10], x[10]; val integer inf, sup) is
+integer piv, i, j;
+begin
+	piv := y[inf];
+	i := inf + 1;
+	j := sup;
+	while (i <= j) do
+		if (y[i] <= piv) then i := i + 1;
+		else if (y[j] > piv) then j := j - 1;
+			else intercambiar(y[i], y[j], x[i], x[j]);
+			end
+		end
+	end
+	intercambiar(y[inf], y[j], x[inf], x[j]);
+	return j;
+end
+-----------------------------------------------
+procedure ordRapida(ref integer y[10], x[10]; val integer inf, sup) is
+integer idxPivote;
+begin
+	if inf < sup then
+		idxPivote := divide(y, x, inf, sup);
+		ordRapida(y, x, inf, idxPivote - 1);
+		ordRapida(y, x, idxPivote + 1, sup);
+	end
+end
+-----------------------------------------------
+procedure show_dominantes(ref integer x[10], y[10]) is
+integer maximal, i;
+begin
+	i := 9;
+	maximal := x[i];
+	put_line("El punto (",x[i],",",y[i],") es maximal");
+	i := i - 1;
+	while (i >= 0) do
+		if (x[i] > maximal) then
+			put_line("El punto (",x[i],",",y[i],") es maximal");
+			maximal := x[i];
+		end
+		i := i - 1;
+	end
+end
+-----------------------------------------------
+begin
+	put_line("Escribe los 10 puntos a ordenar");
+	i := 0;
+	while (i < 10) do
+		-- esto no deja: get(v[i]);
+		-- lo sustituyo por lo siguiente:
+		put("Escribe las coordenadas (x,y) del punto numero ",i+1,':');
+		get(aux);
+		x[i] := aux;
+		get(aux);
+		y[i] := aux;
+		i := i + 1;
+	end
+	put_line("Se empieza a ordenar");
+	ordRapida(y, x, 0, 9);
+	put_line("Se ha acabado de ordenar");
+	
+	put_line("Puntos ordenados por y de menor a mayor:");
+	i := 0;
+	while (i < 10) do
+		put_line("(", x[i], " ", y[i],')');
+		i := i + 1;
+	end 
+	
+	show_dominantes(x, y);
+end
