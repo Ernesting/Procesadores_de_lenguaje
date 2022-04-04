@@ -53,7 +53,7 @@ function boolean comprobarParticion(val integer num) is
 	integer part2;
 begin
 	numC := numCifras(num);
-	if(numC=1) then
+	if numC=1 then
 		if esPrimo(num)=true then
 			return true;
 		else
@@ -61,11 +61,14 @@ begin
 		end
 	else
 		rep := 1;
-		while(rep<numC) do
+		while rep<numC do
+			put_line("rep=",rep);
 			--Se hace la primera parte de la particion del numero
-			part1 := num div elevar(10, rep);
+			part1 := num div elevar(10,rep);
+			put_line("part1=",part1);
 			--Se hace la otra parte de la particion del numero
 			part2 := num mod elevar(10,rep);
+			put_line("part2=",part2);
 			--Comprobamos si las dos partes son primas
 			put(" ",part1);
 			put("+ ", part2);
