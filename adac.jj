@@ -13,10 +13,33 @@
 
 PARSER_BEGIN(adac)
 package traductor;
+import java.io.IOException;
+
+import lib.symbolTable.*;
+import lib.symbolTable.exceptions.*;
 
 public class adac {
+	//tabla de símbolos global
+	static SymbolTable st;
+	
+	private static void initSymbolTable() {
+		boolean b;
+		String[] palsRes = {
+	    	"begin","integer","character","boolean","or","and",
+			"not","true","false","if","return","else","while",
+			"skip_line","do","put_line","put","is","then",
+			"div","mod","val","ref","function","procedure",
+			"get","end","int2char","char2int"
+		};
+
+		st.insertReservedWords(palsRes);
+	}
+	
     public static void main(String[] args) {
     	adac parser;
+		
+		st = new SymbolTable();
+    	initSymbolTable();
 
     	try {
 	    	if(args.length == 0) { //entrada desde stdin
@@ -34,22 +57,33 @@ public class adac {
         	System.err.println("LEX_ERROR: " + e.getMessage());
         }
         catch (ParseException e) {
-          	Token t;
-          	
-        	System.out.println("prueba"+ e.toString());
-         	do {
-   				t = getNextToken();
-   				System.out.print("ERROR LEXICO2: ");
-         	} while (t.kind !=tPYC  && t.kind!= EOF );
-        	//System.err.println("Svoid_ERROR: " + e.getMessage());
+        	System.err.println("Svoid_ERROR: " + e.getMessage());
         }
         catch (Exception e) {
-			System.err.println("Finalizo traduccion por deteccion de error no controlado: \n\t" + e.getMessage());
+			System.err.println("Finalizo traduccion por deteccion de error no controlado: \n\t" 
+								+ e.getMessage());
         }
         
     }
 }
 PARSER_END(adac)
+
+JAVACODE
+void error_skipto(int kind) {
+  ParseException e = generateParseException();  // generate the exception object
+  System.out.println("ERROR SINTACTICO: TOKENS A ELIMINAR");  // print the error message
+  Token t;
+  // consume tokens all the way up to a token of "kind" - use a do-while loop
+  // rather than a while because the current token is the one immediately before
+  // the erroneous token (in our case the token immediately before what should
+  // have been "if"/"while".
+  t = getNextToken();
+  while (t.kind != kind){
+	  System.out.println("("+t.beginLine+","+t.beginColumn+") Token eliminado: "+t.image);
+	   t = getNextToken();
+  }
+}
+
 TOKEN_MGR_DECLS:
 {
   static void showInfo(Token e, String info) {
@@ -82,10 +116,6 @@ TOKEN :
 TOKEN :
 {
  	< tBEGIN: "begin" >
- 		{
- 			//mostrar la información pedida
-			showInfo(matchedToken, "palabra reservada");
-		}
 | 	< tINT: "integer" >
 | 	< tCHAR: "character" >
 | 	< tBOOL: "boolean" >
@@ -93,56 +123,56 @@ TOKEN :
 |	< tAND: "and" >
 | 	< tNOT: "not" >
 | 	< tTRUE: "true" >
-|	< tFALSE: "false" > { showInfo(matchedToken, "valor booleano");}
-| 	< tIF: "if" > { showInfo(matchedToken, "operador if");}
-| 	< tRET: "return" > { showInfo(matchedToken, "operador return");}
-| 	< tELSE: "else" > { showInfo(matchedToken, "operador else");}
-| 	< tWHILE: "while" > { showInfo(matchedToken, "operador while");}
+|	< tFALSE: "false" > 
+| 	< tIF: "if" > 
+| 	< tRET: "return" > 
+| 	< tELSE: "else" > 
+| 	< tWHILE: "while" > 
 | 	< tSKIPLINE: "skip_line" >
-| 	< tDO: "do" > { showInfo(matchedToken, "operador do");}
-| 	< tAP: "(" > { showInfo(matchedToken, "abrir parentesis");}
-| 	< tCP: ")" > { showInfo(matchedToken, "cerrar parentesis");}
-| 	< tAC: "[" > { showInfo(matchedToken, "abrir corchete");}
-| 	< tCC: "]" > { showInfo(matchedToken, "cerrar corchete");}
-| 	< tCOMA: "," > { showInfo(matchedToken, "coma");}
-| 	< tPYC: ";" > { showInfo(matchedToken, "punto y coma");}
-| 	< tPUTL: "put_line" > { showInfo(matchedToken, "operador put_line");}
-| 	< tPUT: "put" > { showInfo(matchedToken, "operador put");}
-| 	< tIS: "is" > { showInfo(matchedToken, "operador is"); }
-| 	< tTHEN: "then" > { showInfo(matchedToken, "operador then"); }  
+| 	< tDO: "do" > 
+| 	< tAP: "(" > 
+| 	< tCP: ")" > 
+| 	< tAC: "[" > 
+| 	< tCC: "]" > 
+| 	< tCOMA: "," > 
+| 	< tPYC: ";" > 
+| 	< tPUTL: "put_line" > 
+| 	< tPUT: "put" > 
+| 	< tIS: "is" > 
+| 	< tTHEN: "then" >   
 | 	< tLE: "<=" >
 |	< tL: "<" >
 |	< tG: ">" >
 |	< tGE: ">=" >
 |	< tEQ: "=" >
-|	< tNEQ: "<>" >{ showInfo(matchedToken, "operador comparacion");}
+|	< tNEQ: "<>" >
 | 	< tDIV: "div" >
 |	< tMOD: "mod" >
 |	< tPLUS: "+" >
 |	< tPROD: "*" >
-|	< tMINUS: "-" > { showInfo(matchedToken, "operador");}
-| 	< tCONST_INT: (< DIGIT >)+ >  { showInfo(matchedToken, "constante entera");}
-| 	< tOPAS: ":=" >  { showInfo(matchedToken, "operador asignacion");}
-| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > { showInfo(matchedToken, "constante string");}
+|	< tMINUS: "-" > 
+| 	< tCONST_INT: (< DIGIT >)+ >  
+| 	< tOPAS: ":=" >  
+| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > 
 | 	< tVAL: "val" >
-|	< tREF: "ref" > { showInfo(matchedToken, "paso de parametro");}
-| 	< tFUNC: "function" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tPROC: "procedure" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tGET: "get" > { showInfo(matchedToken, "palabra reservada");}
-| 	< tEND: "end" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  { showInfo(matchedToken, "caracter simple");}
-| 	< tINT2CHAR: "int2char" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tCHAR2INT: "char2int" > { showInfo(matchedToken, "palabra reservada"); }
-| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > { showInfo(matchedToken, "identificador");}
+|	< tREF: "ref" > 
+| 	< tFUNC: "function" > 
+| 	< tPROC: "procedure" > 
+| 	< tGET: "get" > 
+| 	< tEND: "end" > 
+| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  
+| 	< tINT2CHAR: "int2char" > 
+| 	< tCHAR2INT: "char2int" > 
+| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > 
 }
 
-/*SPECIAL_TOKEN: {
+SPECIAL_TOKEN: {
 	< ERROR: (~[]) >
 		{
 			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:");
 			 matchedToken.image = " "; 
 		}
-}*/
+}
 
 //------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
 void programa () : 
@@ -151,7 +181,7 @@ void programa () :
 }
 {
 	( 
-		< tPROC >< tID >< tIS > declaracion_variables() declaracion_procs_funcs() bloque_sentencias()
+		< tPROC >< tID >< tIS > declaracion_variables() /*declaracion_procs_funcs()*/ bloque_sentencias()
 	)
 	< EOF >
 }
@@ -161,7 +191,8 @@ void declaracion_variables () :
 
 }
 {
-	(	   declaracion() < tPYC >
+	(
+	   declaracion() punto_y_coma()
 	)*
 }
 
@@ -202,7 +233,7 @@ void variable () :
 {
 	(
 	  LOOKAHEAD(2)
-		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
 	)
 }
 
@@ -243,7 +274,7 @@ void id_or_array () :
 }
 {
 	( LOOKAHEAD(2)
-		(< tID >< tAC > <tCONST_INT >< tCC >) | < tID > 
+		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
 	)
 }
 
@@ -253,16 +284,16 @@ void instruccion () :
 }
 {
 	(
-		 inst_leer() < tPYC >
-		| inst_saltar_linea() < tPYC >
-		| inst_escribir() < tPYC >
-		| inst_escribir_linea() < tPYC >
+		 inst_leer() punto_y_coma()
+		| inst_saltar_linea() punto_y_coma()
+		| inst_escribir() punto_y_coma()
+		| inst_escribir_linea() punto_y_coma()
 		| LOOKAHEAD(2)
-			inst_invoc_proc() < tPYC >
-		| inst_asignacion() < tPYC >
+			inst_invoc_proc() punto_y_coma()
+		| inst_asignacion() punto_y_coma()
 		| inst_seleccion() 
 		| inst_iteracion()
-		| inst_return() < tPYC >
+		| inst_return() punto_y_coma()
 	)
 }
 
@@ -353,11 +384,11 @@ void factor () :
 {
 	( 
 		< tNOT > factor()
-		| < tAP > expresion() < tCP >
-		| < tINT2CHAR > < tAP > expresion() < tCP >
-		| < tCHAR2INT >	< tAP > expresion() < tCP >
-		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() < tCP >
-		| LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+		| < tAP > expresion() cerrar_parentesis()
+		| < tINT2CHAR > < tAP > expresion() cerrar_parentesis()
+		| < tCHAR2INT >	< tAP > expresion() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
 		| < tID >
 		| < tCONST_INT >
 		| < tCONST_CHAR >
@@ -375,7 +406,7 @@ void bloque_sentencias () :
 }
 {
 	( 
-		< tBEGIN > lista_instrucciones() < tEND >
+		declaracion_procs_funcs() < tBEGIN > lista_instrucciones() end()
 	)
 }
 
@@ -407,7 +438,8 @@ void declaracion_procedimiento():
 
 }
 {
-  	(  	  cabecera_procedimiento() declaracion_variables() bloque_sentencias()
+  	(
+  	  cabecera_procedimiento() declaracion_variables() bloque_sentencias()
 	)
 }
 
@@ -417,17 +449,17 @@ void cabecera_procedimiento():
 }
 {
   	(
-  	  < tPROC >< tID > < tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP > < tIS >
+  	  < tPROC >< tID > < tAP > (dec_parametros()(< tPYC > dec_parametros())*)? cerrar_parentesis() < tIS >
 	)
 }
 
 void cabecera_funcion():
 {
 
-}
+}//
 {
   	(
-  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? < tCP >< tIS >
+  	  < tFUNC > tipo_variable() < tID >< tAP > (dec_parametros()(< tPYC > dec_parametros())*)? cerrar_parentesis()< tIS >
 	)
 }
 
@@ -468,7 +500,7 @@ void inst_leer() :
 }
 {
 	(
-		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* < tCP >
+		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* cerrar_parentesis()
 	)
 }
 
@@ -479,7 +511,7 @@ void inst_saltar_linea() :
 }
 {
 	(
-		< tSKIPLINE > < tAP > < tCP >
+		< tSKIPLINE > < tAP > cerrar_parentesis()
 	)
 }
 
@@ -490,7 +522,7 @@ void inst_escribir() :
 }
 {
 	(
-		< tPUT > < tAP > expresion() (< tCOMA > expresion())* < tCP >
+		< tPUT > < tAP > expresion() (< tCOMA > expresion())* cerrar_parentesis()
 	)
 }
 
@@ -501,7 +533,7 @@ void inst_escribir_linea() :
 }
 {
 	(
-		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? < tCP >
+		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? cerrar_parentesis()
 	)
 }
 
@@ -511,7 +543,7 @@ void inst_invoc_proc() :
 }
 {
 	(
-		< tID > < tAP > lista_cero_o_mas_exps() < tCP >
+		< tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
 	)
 }
 
@@ -522,7 +554,7 @@ void asignable () :
 }
 {
 	(
-	  LOOKAHEAD(2) < tID > < tAC > expresion() < tCC >
+	  LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
 	| < tID > 
 	)
 }
@@ -533,7 +565,7 @@ void inst_seleccion():
 }
 {
 	(
-	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? < tEND >
+	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? end()
 	)
 }
 
@@ -544,7 +576,7 @@ void inst_iteracion():
 }
 {
 	(
-	 	< tWHILE > expresion() < tDO > lista_instrucciones() < tEND >
+	 	< tWHILE > expresion() < tDO > lista_instrucciones() end()
 	)
 }
 
@@ -555,5 +587,45 @@ void inst_return():
 {
 	(
 	 	< tRET > expresion()
+	)
+}
+
+void punto_y_coma():{
+	
+}
+{
+	(
+		< tPYC >
+		| error_skipto(tPYC)
+	)
+}
+
+void end():{
+	
+}
+{
+	(
+		< tEND >
+		| error_skipto(tEND)
+	)
+}
+
+void cerrar_corchete():{
+
+}
+{
+	(
+		< tCC >
+		| error_skipto(tCC)
+	)
+}
+
+void cerrar_parentesis():{
+
+}
+{
+	(
+		< tCP >
+		| error_skipto(tCP)
 	)
 }
