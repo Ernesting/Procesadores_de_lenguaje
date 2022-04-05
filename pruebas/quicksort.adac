@@ -1,0 +1,62 @@
+procedure quicksort is
+integer v[10], inf, sup, i, aux;
+
+------------------------------------------------
+procedure intercambiar (ref integer v1, v2) is
+integer aux;
+begin
+	aux := v1;
+	v1 := v2;
+	v2 := aux;
+end
+------------------------------------------------
+function integer divide (ref integer v[10]; val integer inf, sup) is
+integer piv, i, j;
+begin
+	piv := v[inf];
+	i := inf + 1;
+	j := sup;
+	while (i <= j) do
+		if (v[i] <= piv) then i := i + 1;
+		else if (v[j] > piv) then j := j - 1;
+			else intercambiar(v[i], v[j]);
+			end
+		end
+	end
+	intercambiar(v[inf], v[j]);
+	return j;
+end
+-----------------------------------------------
+procedure ordRapida(ref integer v[10]; val integer inf, sup) is
+integer idxPivote;
+begin
+	if inf < sup then
+		idxPivote := divide(v, inf, sup);
+		ordRapida(v, inf, idxPivote - 1);
+		ordRapida(v, idxPivote + 1, sup);
+	end
+end
+-----------------------------------------------
+
+begin
+	put_line("Escribe los 10 numeros a ordenar");
+	i := 0;
+	while (i < 10) do
+    put("Escribe el numero nº ",i+1,':');
+		-- esto no deja: get(v[i]);
+		-- lo sustituyo por lo siguiente:
+		get(aux);
+		v[i] := aux;
+		i := i + 1;
+	end
+	put_line("Se empieza a ordenar");
+	ordRapida(v, 0, 9);
+	put_line("Se ha acabado de ordenar");
+	
+	put_line("Vector ordenador de menor a mayor:");
+	i := 0;
+	while (i < 10) do
+		put_line(v[i]);
+		i := i + 1;
+	end 
+end

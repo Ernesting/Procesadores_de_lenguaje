@@ -1,0 +1,158 @@
+--girar_matriz
+procedure numeros_balanceados is
+	integer matriz[1000];
+	integer numF; 
+	integer numC;
+	integer contF;
+	integer contC;
+	integer valor;
+	integer rotacion;
+---------------------------------------
+--función que calcula el lugar donde se situa la componente dado un numero de fila, columna y tamaño
+function integer sitio(val integer numF, numC, tam) is
+begin
+	return ((((numF-1) * tam) + numC)-1);
+end
+---------------------------------------
+--función que coloca el valor pasado como parámetro en la fila y columna de la matriz indicadas
+procedure colocar(ref integer matriz[1000]; val integer numF, numC, tam, valor) is
+begin
+	matriz[sitio(numF, numC, tam)] := valor;
+end
+---------------------------------------
+--función que devuelve el valor guardado en la componente que está en la fila y columna de la matriz indicadas
+function integer comp(ref integer matriz[1000]; val integer numF, numC, tam) is
+begin
+	return matriz[sitio(numF, numC, tam)];
+end
+---------------------------------------
+--función que devuelve true si y solo si la matriz es cuadrada, es decir, tiene el mismo número de filas y columnas
+function boolean esCuadrada(val integer numF, numC) is
+begin
+	if numF=numC then
+		return true;
+	else 
+		return false;
+	end
+end
+----------------------------------------
+--función que imprime por pantalla la matriz pasada como parámetro
+procedure imprimir_matriz(ref integer matriz[1000]; val integer numF, numC) is
+begin
+   contF := 1;
+   while contF<=numF do
+   	contC := 1;
+   	while contC<=numC do
+   		put(" ", comp(matriz, contF, contC, numC));
+   		contC := contC+1;
+   	end
+   	put_line(" ");
+   	contF := contF+1;
+   end
+end
+----------------------------------------
+--proceso que rota la matriz pasada como parámetro en una nueva matriz tambien pasada como parámetro
+procedure rotar90(ref integer matriz[1000], vaux[1000]; val integer numF, numC) is
+	integer i;
+	integer j;
+	integer k;
+begin
+	i := 1;
+	k := 0;
+	while i<=numC do
+		j := numF;
+		while j>=1 do
+			vaux[k] := comp(matriz, j, i, numC);
+			j := j-1;
+			k := k+1;
+		end
+		i := i+1;
+	end
+end
+----------------------------------------
+--proceso que analiza la rotación introducida por el usuario para rotar la matriz
+--los grados indicados
+procedure analizar_rotacion(ref integer matriz[1000]; val integer numF, numC, rotacion) is
+	integer vaux[1000];
+	integer vaux2[1000];
+begin
+	put_line("La matriz resultante es la siguiente: ");
+	if rotacion=90 then
+		rotar90(matriz, vaux, numF, numC);
+		if esCuadrada(numF, numC) then
+			imprimir_matriz(vaux, numF, numC);
+		else
+			imprimir_matriz(vaux, numC, numF);
+		end
+	else if rotacion=180 then
+		rotar90(matriz, vaux, numF, numC);
+		rotar90(vaux, vaux2, numF, numC);
+		if esCuadrada(numF, numC) then
+			imprimir_matriz(vaux2, numF, numC);
+		else
+			imprimir_matriz(vaux2, numC, numF);
+		end
+	else if rotacion=270 then
+		rotar90(matriz, vaux, numF, numC);
+		rotar90(vaux, vaux2, numF, numC);
+		rotar90(vaux2, vaux, numF, numC);
+		if esCuadrada(numF, numC) then
+			imprimir_matriz(vaux, numF, numC);
+		else
+			imprimir_matriz(vaux, numC, numF);
+		end
+	else 
+		imprimir_matriz(matriz, numF, numC);
+	end
+	end
+	end
+end
+---------------------------------------
+--proceso que crea la matriz con los datos que el usuario
+--va introduciendo por pantalla
+procedure crear_matriz(ref integer matriz[1000]; val integer numF, numC) is
+	integer contF;
+	integer contC;
+begin
+	contF := 1;
+   while contF<=numF do
+   	contC := 1;
+   	while contC<=numC do
+   		put("Introduce componente de la fila ", contF);
+   		put(" y la columna ", contC);
+   		put(":");
+   		get(valor);
+   		colocar(matriz, contF, contC, numC, valor);
+   		contC := contC+1;
+   	end
+   	contF := contF+1;
+   end
+   imprimir_matriz(matriz, numF, numC);
+end
+----------------------------------------
+begin
+	put_line ("Este programa rota una matriz la matriz introducida los grados indicados");
+	put("Introduce el numero de filas de la matriz(>0): ");
+   get(numF);
+   while numF <= 0 do
+      put_line("El numero debe ser positivo.");
+      put("Introduce el numero de filas de la matriz(>0): ");
+      get(numF);
+   end
+   put("Introduce el numero de columnas de la matriz(>0): ");
+   get(numC);
+   while numC <= 0 do
+      put_line("El numero debe ser positivo.");
+      put("Introduce el numero de columnas de la matriz(>0): ");
+      get(numC);
+   end
+   crear_matriz(matriz, numF, numC);
+   put("Introduce el numero de grados que deseas rotar la matriz (0, 90, 180, 270, 360): ");
+   get(rotacion);
+   while ((rotacion<>0) and (rotacion<>90) and (rotacion<>180) and (rotacion<>270) and (rotacion<>360)) do
+      put_line("El numero de grados debe ser igual a uno de los anteriores");
+      put("Introduce el numero de grados que deseas rotar la matriz (0, 90, 180, 270, 360): ");
+      get(rotacion);
+   end
+   analizar_rotacion(matriz, numF, numC, rotacion);
+end
