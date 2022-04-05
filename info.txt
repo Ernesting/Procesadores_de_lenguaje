@@ -1,0 +1,9 @@
+Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799
+test_1.adac:
+test_2.adac:
+test_3.adac:
+test_4.adac:
+test_5.adac:
+	Sabiendo que un punto p en un plano euclideo domina otro q si todas sus coordenadas
+	son mayores o iguales, este programa devuelve de una lista de 10 puntos (x,y) 
+	aquellos que no son dominados por ningun otro punto del plano.
