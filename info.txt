@@ -1,0 +1,21 @@
+
+Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799
+test_1.adac:
+	Un número magnanimo es aquel que las sumas obtenidas insertando un “+” 
+	entre sus digitos en cualquier posicion son números primos. Este programa
+	comprueba si el numero introducido por el usuario es un numero magnanimo.
+test_2.adac:
+	Un numero se denomina balanceado si la cantidad de numeros primos en los
+	que se puede descomponer es par. Este programa comprueba si el numero
+	introducido por el usuario es un numero balanceado.
+test_3.adac:
+	Este programa saca por pantalla la descomposicion en factores primos
+	del numero que el usuario introducde por pantalla.
+test_4.adac:
+	Este programa rota la matriz introducida por el usuario (cuadrada o no) 
+	con el numero de filas y columnas deseadas los grados que el usuario 
+	indique por pantalla.
+test_5.adac:
+	Sabiendo que un punto p en un plano euclideo domina otro q si todas sus coordenadas
+	son mayores o iguales, este programa devuelve de una lista de 10 puntos (x,y) 
+	aquellos que no son dominados por ningun otro punto del plano.
