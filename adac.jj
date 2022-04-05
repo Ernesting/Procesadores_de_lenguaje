@@ -2,7 +2,7 @@
 // File:   adac.jj
 // Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
 // Date:   Marzo 2022
-// Coms:   Un tutorial sobre el análisis léxico con javacc
+// Coms:   Un tutorial sobre el anï¿½lisis lï¿½xico con javacc
 //         https://javacc.github.io/javacc/tutorials/token-manager.html
 //*****************************************************************
 
@@ -15,11 +15,14 @@ PARSER_BEGIN(adac)
 package traductor;
 import java.io.IOException;
 
+import lib.attributes.*;
+import lib.errores.*;
 import lib.symbolTable.*;
 import lib.symbolTable.exceptions.*;
+import lib.tools.SemanticFunctions.*;
 
 public class adac {
-	//tabla de símbolos global
+	//tabla de sï¿½mbolos global
 	static SymbolTable st;
 	
 	private static void initSymbolTable() {
@@ -48,7 +51,7 @@ public class adac {
 			else { //entrada desde fichero en args[0]
 	            parser = new adac(new java.io.FileInputStream(args[0])); 
 			}
-			parser.programa(); //invoca símbolo inicial de la gramática
+			parser.programa(); //invoca sï¿½mbolo inicial de la gramï¿½tica
 		}
 		catch (java.io.FileNotFoundException e) {
 			System.err.println ("Fichero " + args[0] + " no encontrado.");
@@ -90,7 +93,7 @@ TOKEN_MGR_DECLS:
     System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
      }
 }
-//------------ descripción del AL
+//------------ descripciï¿½n del AL
 SKIP :
 {
    " "
@@ -174,7 +177,8 @@ SPECIAL_TOKEN: {
 		}
 }
 
-//------------ Símbolo inicial de la gramática. Para análisis léxico no hace falta más
+//------------ Sï¿½mbolo inicial de la gramï¿½tica. Para anï¿½lisis lï¿½xico no hace falta mï¿½s
+//programa: < tPROC >< tID >< tIS > declaracion_variables bloque_sentencias
 void programa () : 
 {
 
@@ -186,6 +190,7 @@ void programa () :
 	< EOF >
 }
 
+//declaracion_variables: (declaracion punto_y_coma)*
 void declaracion_variables () :
 {
 
@@ -196,47 +201,93 @@ void declaracion_variables () :
 	)*
 }
 
+//declaracion: tipo_variable lista_vars
 void declaracion () :
 {
-
+	Token t;
+	Attributes at = new Attributes();
 }
 {
 	(
-	   tipo_variable() lista_vars()
+	   at.type = tipo_variable()
+	   lista_vars(at)
 	)
 }
 
-void tipo_variable () :
+//tipo_variable: < tINT > | < tCHAR > | < tBOOL >
+Symbol.Types tipo_variable () :
 {
 
 }
 {
 	(
-		< tINT > | < tCHAR > | < tBOOL >
+		< tINT > {return Symbol.Types.INT;}
+		| < tCHAR > {return Symbol.Types.CHAR;}
+		| < tBOOL > {return Symbol.Types.BOOL;}
 	)
 }
 
-void lista_vars () :
+//lista_vars: variable (< tCOMA > variable)*
+void lista_vars (Attributes at) :
 {
 
 }
 {
 	(
-		variable() ( < tCOMA > variable() )*
+		variable(at) ( < tCOMA > variable(at) )*
 	)
 }
 
-void variable () :
-{
-
-}
-{
-	(
+/*variable:
 	  LOOKAHEAD(2)
-		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
+		(< tID >< tAC >< tCONST_INT >cerrar_corchete) 
+		| < tID > 
+*/
+void variable (Attributes at) :
+{
+	Token t1, t2;
+	Attributes at1 = new Attributes();
+	Symbol s = null;
+}
+{
+	(
+		LOOKAHEAD(2)
+		t1 = < tID >
+		< tAC > 
+		t2 = < tCONST_INT >
+		cerrar_corchete()
+			{//crear e insertar el simbolo
+				try{
+					s = new SymbolArray(t1.image, 0, Integer.parseInt(t2.image)-1, at.type);
+					st.insertSymbol(s);
+				}catch(AlreadyDefinedSymbolException e){
+					ErrorSemantico.deteccion(e,t1);
+				}
+				at.code = t1.image + "[" + t2.image + "]";
+			}	
+		| t1 = < tID >
+			{//crear e insertar el simbolo
+				if (at.type == Symbol.Types.INT) {
+					s = new SymbolInt(t1.image);
+				}
+				else if (at.type == Symbol.Types.CHAR){
+					s = new SymbolChar(t1.image);
+				}
+				else {//at.type == Symbol.Types.BOOL
+					s = new SymbolBool(t1.image);
+				}
+				try {
+					st.insertSymbol(s);
+				}
+				catch (AlreadyDefinedSymbolException e){
+					ErrorSemantico.deteccion(e, t1);
+				}
+				at.code = t1.image;
+			} 
 	)
 }
 
+//declaracion_procs_funcs: (LOOKAHEAD(2) declaracion_proc_func)*
 void declaracion_procs_funcs () :
 {
 
@@ -248,6 +299,7 @@ void declaracion_procs_funcs () :
 	)*
 }
 
+//declaracion_funcion: cabecera_funcion declaracion_variables bloque_sentencias
 void declaracion_funcion () :
 {
 
@@ -258,6 +310,7 @@ void declaracion_funcion () :
 	)
 }
 
+//dec_parametros:clase_parametros tipo_variable id_or_array (< tCOMA > id_or_array) *
 void dec_parametros () :
 {
 
