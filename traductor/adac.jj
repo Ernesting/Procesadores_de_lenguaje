@@ -1,0 +1,877 @@
+//*****************************************************************
+// File:   adac.jj
+// Author: Adrian Arribas Mateo 795593 y Ernesto Bielsa Gracia 798799 
+// Date:   Marzo 2022
+// Coms:   Un tutorial sobre el an�lisis l�xico con javacc
+//         https://javacc.github.io/javacc/tutorials/token-manager.html
+//*****************************************************************
+
+ options {
+   IGNORE_CASE = false;
+   COMMON_TOKEN_ACTION = false;
+ }
+
+PARSER_BEGIN(adac)
+package traductor;
+import java.io.IOException;
+
+import lib.attributes.*;
+import lib.errores.*;
+import lib.symbolTable.*;
+import lib.symbolTable.exceptions.*;
+import lib.tools.SemanticFunctions.*;
+
+public class adac {
+	//tabla de s�mbolos global
+	static SymbolTable st;
+	
+	private static void initSymbolTable() {
+		boolean b;
+		String[] palsRes = {
+	    	"begin","integer","character","boolean","or","and",
+			"not","true","false","if","return","else","while",
+			"skip_line","do","put_line","put","is","then",
+			"div","mod","val","ref","function","procedure",
+			"get","end","int2char","char2int"
+		};
+
+		st.insertReservedWords(palsRes);
+	}
+	
+    public static void main(String[] args) {
+    	adac parser;
+		
+		st = new SymbolTable();
+    	initSymbolTable();
+
+    	try {
+	    	if(args.length == 0) { //entrada desde stdin
+				parser = new adac(System.in);
+			}
+			else { //entrada desde fichero en args[0]
+	            parser = new adac(new java.io.FileInputStream(args[0])); 
+			}
+			parser.programa(); //invoca s�mbolo inicial de la gram�tica
+		}
+		catch (java.io.FileNotFoundException e) {
+			System.err.println ("Fichero " + args[0] + " no encontrado.");
+		}
+		catch (TokenMgrError e) {
+        	System.err.println("LEX_ERROR: " + e.getMessage());
+        }
+        catch (ParseException e) {
+        	System.err.println("Svoid_ERROR: " + e.getMessage());
+        }
+        catch (Exception e) {
+			System.err.println("Finalizo traduccion por deteccion de error no controlado: \n\t" 
+								+ e.getMessage());
+        }
+        
+    }
+}
+PARSER_END(adac)
+
+JAVACODE
+void error_skipto(int kind) {
+  ParseException e = generateParseException();  // generate the exception object
+  System.out.println("ERROR SINTACTICO: TOKENS A ELIMINAR");  // print the error message
+  Token t;
+  // consume tokens all the way up to a token of "kind" - use a do-while loop
+  // rather than a while because the current token is the one immediately before
+  // the erroneous token (in our case the token immediately before what should
+  // have been "if"/"while".
+  t = getNextToken();
+  while (t.kind != kind){
+	  System.out.println("("+t.beginLine+","+t.beginColumn+") Token eliminado: "+t.image);
+	   t = getNextToken();
+  }
+}
+
+TOKEN_MGR_DECLS:
+{
+  static void showInfo(Token e, String info) {
+    System.out.println("("+ e.beginLine + "," + e.beginColumn+ "): "+ info+ " \""+ e.image + "\"");
+     }
+}
+//------------ descripci�n del AL
+SKIP :
+{
+   " "
+|  "\n"
+|  "\t"
+|  "\r"
+|  "\r\n"
+}
+
+SPECIAL_TOKEN: {
+	< COMMENT: "--"(~["\n"])*"\n" >
+}
+
+
+TOKEN :
+{
+  	
+  	< #LETTER: (["a"-"z","A"-"Z"]) >
+|	< #DIGIT: ["0"-"9"] >
+| 	< #GBAJO: "_" >
+}
+
+TOKEN :
+{
+ 	< tBEGIN: "begin" >
+| 	< tINT: "integer" >
+| 	< tCHAR: "character" >
+| 	< tBOOL: "boolean" >
+| 	< tOR: "or" >
+|	< tAND: "and" >
+| 	< tNOT: "not" >
+| 	< tTRUE: "true" >
+|	< tFALSE: "false" > 
+| 	< tIF: "if" > 
+| 	< tRET: "return" > 
+| 	< tELSE: "else" > 
+| 	< tWHILE: "while" > 
+| 	< tSKIPLINE: "skip_line" >
+| 	< tDO: "do" > 
+| 	< tAP: "(" > 
+| 	< tCP: ")" > 
+| 	< tAC: "[" > 
+| 	< tCC: "]" > 
+| 	< tCOMA: "," > 
+| 	< tPYC: ";" > 
+| 	< tPUTL: "put_line" > 
+| 	< tPUT: "put" > 
+| 	< tIS: "is" > 
+| 	< tTHEN: "then" >   
+| 	< tLE: "<=" >
+|	< tL: "<" >
+|	< tG: ">" >
+|	< tGE: ">=" >
+|	< tEQ: "=" >
+|	< tNEQ: "<>" >
+| 	< tDIV: "div" >
+|	< tMOD: "mod" >
+|	< tPLUS: "+" >
+|	< tPROD: "*" >
+|	< tMINUS: "-" > 
+| 	< tCONST_INT: (< DIGIT >)+ >  
+| 	< tOPAS: ":=" >  
+| 	< tCONST_STRING: "\"" ("\\" ~[] | ~["\"","\\"] | "\"\"")* "\"" > 
+| 	< tVAL: "val" >
+|	< tREF: "ref" > 
+| 	< tFUNC: "function" > 
+| 	< tPROC: "procedure" > 
+| 	< tGET: "get" > 
+| 	< tEND: "end" > 
+| 	< tCONST_CHAR: "'" ("\\" ~[] | ~["\"","\\","\r","\n"] ) "'" >  
+| 	< tINT2CHAR: "int2char" > 
+| 	< tCHAR2INT: "char2int" > 
+| 	< tID:< LETTER >((< GBAJO >)?(< LETTER >|< DIGIT >)+)* > 
+}
+
+SPECIAL_TOKEN: {
+	< ERROR: (~[]) >
+		{
+			 System.out.print("ERROR LEXICO: "); showInfo(matchedToken, "simbolo no reconocido:");
+			 matchedToken.image = " "; 
+		}
+}
+
+//------------ S�mbolo inicial de la gram�tica. Para an�lisis l�xico no hace falta m�s
+//programa: < tPROC >< tID >< tIS > declaracion_variables declaracion_procs_funcs bloque_sentencias
+void programa () : 
+{
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes(), at  = new Attributes();
+	Token t;
+	SymbolProcedure s;
+}
+{
+	( 
+		< tPROC >
+		t = < tID >
+			{
+				at.initialiseParList();
+				s = new SymbolProcedure(t.image, at.parList);
+				s.nivel = st.level;
+				try{
+					st.insertSymbol(s);
+				}
+				catch (AlreadyDefinedSymbolException e) {
+					ErrorSemantico.deteccion(e, t);
+				}
+
+				st.insertBlock();
+				//hereda el atributo
+				at1.parList = at.parList;
+			}
+		< tIS > 
+		declaracion_variables(at1) 
+		declaracion_procs_funcs(at2) 
+		bloque_sentencias(at3)
+			{
+				st.removeBlock();
+				// ...
+			}
+	)
+	< EOF >
+}
+
+//declaracion_variables: (declaracion punto_y_coma)*
+void declaracion_variables (Attributes at) :
+{
+
+}
+{
+	(
+	   declaracion() punto_y_coma()
+	)*
+}
+
+//declaracion: tipo_variable lista_vars
+void declaracion () :
+{
+	Token t;
+	Attributes at = new Attributes();
+}
+{
+	(
+	   at.type = tipo_variable()
+	   lista_vars(at)
+	)
+}
+
+//tipo_variable: < tINT > | < tCHAR > | < tBOOL >
+Symbol.Types tipo_variable () :
+{
+
+}
+{
+	(
+		< tINT > {return Symbol.Types.INT;}
+		| < tCHAR > {return Symbol.Types.CHAR;}
+		| < tBOOL > {return Symbol.Types.BOOL;}
+	)
+}
+
+//lista_vars: variable (< tCOMA > variable)*
+void lista_vars (Attributes at) :
+{
+
+}
+{
+	(
+		variable(at) ( < tCOMA > variable(at) )*
+	)
+}
+/*variable: LOOKAHEAD(2) < tID >< tAC >< tCONST_INT >cerrar_corchete
+			| < tID >
+*/
+void variable (Attributes at) :
+{
+	Token t1, t2;
+	Attributes at1 = new Attributes();
+	Symbol s = null;
+}
+{
+	(
+		LOOKAHEAD(2)
+		t1 = < tID >
+		< tAC > 
+		t2 = < tCONST_INT >
+		cerrar_corchete()
+			{//crear e insertar el simbolo
+				try{
+					s = new SymbolArray(t1.image, 0, Integer.parseInt(t2.image)-1, at.type, at.parClass); 
+					s.nivel = st.level;
+					st.insertSymbol(s);
+				}catch(AlreadyDefinedSymbolException e){
+					ErrorSemantico.deteccion(e,t1);
+				}
+				at.code = t1.image + "[" + t2.image + "]";
+			}	
+		| t1 = < tID >
+			{//crear e insertar el simbolo
+				if (at.type == Symbol.Types.INT) {
+					s = new SymbolInt(t1.image, at.parClass);
+				}
+				else if (at.type == Symbol.Types.CHAR){
+					s = new SymbolChar(t1.image,at.parClass);
+				}
+				else {//at.type == Symbol.Types.BOOL
+					s = new SymbolBool(t1.image, at.parClass);
+				}
+				s.nivel = st.level;
+				try {
+					st.insertSymbol(s);
+				}
+				catch (AlreadyDefinedSymbolException e){
+					ErrorSemantico.deteccion(e, t1);
+				}
+				at.code = t1.image;
+			} 
+	)
+}
+
+//declaracion_procs_funcs: (LOOKAHEAD(2) declaracion_proc_func)*
+void declaracion_procs_funcs (Attributes at) :
+{
+
+}
+{
+	(
+	  	LOOKAHEAD(2)
+		declaracion_proc_func()
+	)*
+}
+
+/* declaracion_proc_func: LOOKAHEAD(2) declaracion_funcion
+						|declaracion_procedimiento
+*/
+void declaracion_proc_func():
+{
+	//supongo
+	Attributes at = new Attributes();
+}
+{
+	(
+	  	LOOKAHEAD(2)
+		declaracion_funcion(at)
+		|declaracion_procedimiento(at)
+		
+	)
+}
+
+
+//declaracion_funcion: cabecera_funcion declaracion_variables declaracion_procs_funcs bloque_sentencias
+void declaracion_funcion (Attributes at) :
+{
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes(), at4 = new Attributes();
+}
+{
+	(
+		cabecera_funcion(at1) 
+		declaracion_variables(at2) 
+		declaracion_procs_funcs(at3) 
+		bloque_sentencias(at4)
+			{
+				st.removeBlock();
+				// ...
+			}
+	)
+}
+
+/* declaracion_procedimiento: cabecera_procedimiento declaracion_variables declaracion_procs_funcs bloque_sentencias
+*/
+void declaracion_procedimiento(Attributes at):
+{
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes(), at4 = new Attributes();
+}
+{
+  	(
+  	  	cabecera_procedimiento(at1) 
+		declaracion_variables(at2) 
+		declaracion_procs_funcs(at3) 
+		bloque_sentencias(at4)
+			{
+				st.removeBlock();
+				// ...
+			}
+
+	) 
+}
+
+//dec_parametros:clase_parametros tipo_variable lista_vars
+void dec_parametros () :
+{
+	Attributes at = new Attributes();
+}
+{
+	(	
+		at.parClass = clase_parametros() 
+		at.type = tipo_variable() 
+		lista_vars(at)
+	)
+}
+/* id_or_array: LOOKAHEAD(2) < tID >< tAC > <tCONST_INT >cerrar_corchete
+				| < tID >
+*/
+void id_or_array () :
+{
+
+}
+{
+	( LOOKAHEAD(2)
+		(< tID >< tAC > <tCONST_INT >cerrar_corchete()) | < tID > 
+	)
+}
+/* instruccion:  inst_leer punto_y_coma
+				| inst_saltar_linea punto_y_coma
+				| inst_escribir punto_y_coma
+				| inst_escribir_linea punto_y_coma
+				| LOOKAHEAD(2)
+					inst_invoc_proc punto_y_coma
+				| inst_asignacion punto_y_coma
+				| inst_seleccion 
+				| inst_iteracion
+				| inst_return punto_y_coma
+*/
+void instruccion () :
+{
+
+}
+{
+	(
+		 inst_leer() punto_y_coma()
+		| inst_saltar_linea() punto_y_coma()
+		| inst_escribir() punto_y_coma()
+		| inst_escribir_linea() punto_y_coma()
+		| LOOKAHEAD(2)
+			inst_invoc_proc() punto_y_coma()
+		| inst_asignacion() punto_y_coma()
+		| inst_seleccion() 
+		| inst_iteracion()
+		| inst_return() punto_y_coma()
+	)
+}
+/* inst_asignacion: asignable < tOPAS > expresion
+*/
+void inst_asignacion () :
+{
+
+}
+{
+	(
+	  asignable() < tOPAS > expresion()
+	)
+}
+/* lista_cero_o_mas_exps: ( lista_una_o_mas_exps )?
+*/
+void lista_cero_o_mas_exps () :
+{
+
+}
+{
+	( 
+		lista_una_o_mas_exps() 
+	)?
+}
+/* expresion: expresion_simple ( operador_relacional expresion_simple )?
+*/
+void expresion (/*Attributes at*/) :
+{
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes(), at = new Attributes();
+}
+{
+	( 
+		expresion_simple(at1) 
+			{
+				at.code = at1.code;
+				at.name = at1.name;
+				at.isConst = at1.isConst;
+				at.isVar = at1.isVar;
+				at.isCompVector = at1.isCompVector;
+			}
+		(
+			operador_relacional(at2) expresion_simple(at3)
+				{
+					at2.type = Symbol.Types.BOOL;
+					if (at1.type == at3.type) {
+						at.type = Symbol.Types.BOOL;
+					}
+					else {
+						ErrorSemantico.deteccion("Tipos incompatibles en expresion: "
+												 + at1.type + "/" + at3.type, token);
+					}
+					at.isVar = false;
+					at.isCompVector = false;
+					at.code += at2.code + at3.code;
+				} 
+		)? 
+			{
+				//...
+			}
+	)
+}
+/* operador_relacional: < tEQ >|< tL >|< tG >|< tLE >|< tGE >|< tNEQ > 
+*/
+void operador_relacional (Attributes at) :
+{
+
+}
+{
+	( 
+		< tEQ >|< tL >|< tG >|< tLE >|< tGE >|< tNEQ > 
+	)
+}
+/* expresion_simple: (operador_aditivo)? termino (operador_aditivo termino )*
+*/
+void expresion_simple (Attributes at) :
+{
+
+}
+{
+	( 
+		(operador_aditivo())? termino() (operador_aditivo() termino() )*
+	)
+}
+/* termino: factor ( operador_multiplicativo factor ) * 
+*/
+void termino () :
+{
+
+}
+{
+	( 
+		factor() ( operador_multiplicativo() factor() ) * 
+	)
+}
+/* operador_multiplicativo: < tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
+*/
+void operador_multiplicativo () :
+{
+
+}
+{
+	( 
+		< tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
+	)
+}
+/* factor: < tNOT > factor
+			| < tAP > expresion cerrar_parentesis
+			| < tINT2CHAR > < tAP > expresion cerrar_parentesis
+			| < tCHAR2INT >	< tAP > expresion cerrar_parentesis
+			| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps cerrar_parentesis
+			| LOOKAHEAD(2) < tID > < tAC > expresion cerrar_corchete
+			| < tID >
+			| < tCONST_INT >
+			| < tCONST_CHAR >
+			| < tCONST_STRING >
+			| < tTRUE >
+			| < tFALSE >
+*/
+void factor () :
+{
+
+}
+{
+	( 
+		< tNOT > factor()
+		| < tAP > expresion() cerrar_parentesis()
+		| < tINT2CHAR > < tAP > expresion() cerrar_parentesis()
+		| < tCHAR2INT >	< tAP > expresion() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
+		| LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
+		| < tID >
+		| < tCONST_INT >
+		| < tCONST_CHAR >
+		| < tCONST_STRING >
+		| < tTRUE >
+		| < tFALSE >
+	)
+}
+/* bloque_sentencias: < tBEGIN > lista_instrucciones end
+*/
+void bloque_sentencias (Attributes at) :
+{
+
+}
+{
+	( 
+		 < tBEGIN > lista_instrucciones() end()
+	)
+}
+/* lista_instrucciones: ( instruccion )*
+*/
+void lista_instrucciones():
+{
+
+}
+{
+	(
+		instruccion()
+	)*
+}
+
+
+/* cabecera_procedimiento: < tPROC >< tID > parametros_formales < tIS >
+*/
+void cabecera_procedimiento(Attributes at):
+{
+	Token t;
+	SymbolProcedure s;
+	Attributes at1 = new Attributes();
+
+}
+{
+  	(
+  	  	< tPROC >
+		t = < tID >
+			{
+				at.initialiseParList();
+				s = new SymbolProcedure(t.image, at.parList);
+				s.nivel = st.level;
+				try{
+					st.insertSymbol(s);
+				}
+				catch (AlreadyDefinedSymbolException e) {
+					ErrorSemantico.deteccion(e, t);
+				}
+
+				st.insertBlock();
+				//hereda el atributo
+				at1.parList = at.parList;
+			}
+		parametros_formales(at1)
+		< tIS >
+			{
+
+			}
+	)
+}
+/* cabecera_funcion: < tFUNC > tipo_variable < tID > parametros_formales cerrar_parentesis < tIS >
+*/
+void cabecera_funcion(Attributes at):
+{
+	Token t;
+	SymbolFunction s;
+	Symbol.Types returnType;
+	Attributes at1 = new Attributes();
+}
+{
+  	(
+  	  	< tFUNC > 
+		returnType = tipo_variable() 
+		t = < tID > 
+			{
+				at.initialiseParList();
+				s = new SymbolFunction(t.image, at.parList, returnType);
+				s.nivel = st.level;
+				try{
+					st.insertSymbol(s);
+				}
+				catch (AlreadyDefinedSymbolException e) {
+					ErrorSemantico.deteccion(e, t);
+				}
+
+				st.insertBlock();
+				//hereda el atributo
+				at1.parList = at.parList;
+			}
+		parametros_formales(at1)
+		< tIS >
+			{
+
+			}
+	)
+}
+
+/* parametros_formales: < tAP > (dec_parametros(< tPYC > dec_parametros)*)? cerrar_parentesis
+*/
+void parametros_formales(Attributes at):
+{
+
+}
+{
+	< tAP > 
+	(dec_parametros()(< tPYC > dec_parametros())*)? 
+	cerrar_parentesis() 
+}
+
+/* clase_parametros: < tVAL >|< tREF >
+*/
+Symbol.ParameterClass clase_parametros():
+{
+
+}
+{
+  	(
+  		< tVAL >
+			{
+				return Symbol.ParameterClass.VAL;
+			}
+		|< tREF >
+			{
+				return Symbol.ParameterClass.REF;
+			}
+	)
+}
+/* lista_una_o_mas_exps: expresion (< tCOMA > expresion)* 
+*/
+void lista_una_o_mas_exps():
+{
+
+}
+{
+  	(
+  	  expresion() (< tCOMA > expresion())* 
+	)
+}
+/* operador_aditivo: < tPLUS > | < tMINUS >
+*/
+void operador_aditivo():
+{
+
+}
+{
+  	(
+  	  < tPLUS > | < tMINUS >
+	)
+}
+/* inst_leer: < tGET > < tAP > id_or_array (< tCOMA > id_or_array)* cerrar_parentesis
+*/
+void inst_leer() :
+{
+
+}
+{
+	(
+		< tGET > < tAP > id_or_array() (< tCOMA > id_or_array())* cerrar_parentesis()
+	)
+}
+
+/* inst_saltar_linea: < tSKIPLINE > < tAP > cerrar_parentesis
+*/
+void inst_saltar_linea() :
+{
+
+}
+{
+	(
+		< tSKIPLINE > < tAP > cerrar_parentesis()
+	)
+}
+
+/* inst_escribir: < tPUT > < tAP > expresion (< tCOMA > expresion)* cerrar_parentesis
+*/
+void inst_escribir() :
+{
+
+}
+{
+	(
+		< tPUT > < tAP > expresion() (< tCOMA > expresion())* cerrar_parentesis()
+	)
+}
+
+/* inst_escribir_linea: < tPUTL > < tAP > (expresion (< tCOMA > expresion)*)? cerrar_parentesis
+*/
+void inst_escribir_linea() :
+{
+
+}
+{
+	(
+		< tPUTL > < tAP > (expresion() (< tCOMA > expresion())*)? cerrar_parentesis()
+	)
+}
+/* inst_invoc_proc: < tID > < tAP > lista_cero_o_mas_exps cerrar_parentesis
+*/
+void inst_invoc_proc() :
+{
+
+}
+{
+	(
+		< tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
+	)
+}
+
+/* asignable: :LOOKAHEAD(2) < tID > < tAC > expresion cerrar_corchete
+					| < tID >
+*/
+void asignable () :
+{
+
+}
+{
+	(
+	  LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
+	| < tID > 
+	)
+}
+/* inst_seleccion: < tIF > expresion < tTHEN > lista_instrucciones (< tELSE > lista_instrucciones)? end
+*/
+void inst_seleccion(): 
+{
+
+}
+{
+	(
+	 	< tIF > expresion() < tTHEN > lista_instrucciones() (< tELSE > lista_instrucciones())? end()
+	)
+}
+
+/* inst_iteracion: < tWHILE > expresion < tDO > lista_instrucciones end
+*/
+void inst_iteracion():
+{
+
+}
+{
+	(
+	 	< tWHILE > expresion() < tDO > lista_instrucciones() end()
+	)
+}
+/* inst_return: < tRET > expresion
+*/
+void inst_return():
+{
+
+}
+{
+	(
+	 	< tRET > expresion()
+	)
+}
+/* punto_y_coma: < tPYC >
+				| error_skipto(tPYC)
+*/
+void punto_y_coma():{
+	
+}
+{
+	(
+		< tPYC >
+		| error_skipto(tPYC)
+	)
+}
+/* end: < tEND >
+		| error_skipto(tEND)
+*/
+void end():{
+	
+}
+{
+	(
+		< tEND >
+		| error_skipto(tEND)
+	)
+}
+/* cerrar_corchete: < tCC >
+					| error_skipto(tCC)
+*/
+void cerrar_corchete():{
+
+}
+{
+	(
+		< tCC >
+		| error_skipto(tCC)
+	)
+}
+/* cerrar_parentesis: < tCP >
+					| error_skipto(tCP)
+*/					
+void cerrar_parentesis():{
+
+}
+{
+	(
+		< tCP >
+		| error_skipto(tCP)
+	)
+}
