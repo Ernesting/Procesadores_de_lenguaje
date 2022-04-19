@@ -224,15 +224,14 @@ void declaracion_variables (Attributes at) :
 }
 {
 	(
-	   declaracion() punto_y_coma()
+	   declaracion(at) punto_y_coma()
 	)*
 }
 
 //declaracion: tipo_variable lista_vars
-void declaracion () :
+void declaracion (Attributes at) :
 {
 	Token t;
-	Attributes at = new Attributes();
 }
 {
 	(
@@ -257,7 +256,7 @@ Symbol.Types tipo_variable () :
 //lista_vars: variable (< tCOMA > variable)*
 void lista_vars (Attributes at) :
 {
-
+	
 }
 {
 	(
@@ -284,6 +283,10 @@ void variable (Attributes at) :
 				try{
 					s = new SymbolArray(t1.image, 0, Integer.parseInt(t2.image)-1, at.type, at.parClass); 
 					s.nivel = st.level;
+					if (at.parList != null){
+						at.parList.add(s);
+					}
+					
 					st.insertSymbol(s);
 				}catch(AlreadyDefinedSymbolException e){
 					ErrorSemantico.deteccion(e,t1);
@@ -302,6 +305,9 @@ void variable (Attributes at) :
 					s = new SymbolBool(t1.image, at.parClass);
 				}
 				s.nivel = st.level;
+				if (at.parList != null){
+					at.parList.add(s);
+				}
 				try {
 					st.insertSymbol(s);
 				}
@@ -384,9 +390,9 @@ void declaracion_procedimiento(Attributes at):
 }
 
 //dec_parametros:clase_parametros tipo_variable lista_vars
-void dec_parametros () :
+void dec_parametros (Attributes at) :
 {
-	Attributes at = new Attributes();
+	
 }
 {
 	(	
@@ -504,9 +510,33 @@ void operador_relacional (Attributes at) :
 }
 {
 	( 
-		< tEQ >|< tL >|< tG >|< tLE >|< tGE >|< tNEQ > 
+		< tEQ >
+			{
+				at.code = "=";
+			}
+		|< tL >
+			{
+				at.code = "<";
+			}
+		|< tG >
+			{
+				at.code = ">";
+			}
+		|< tLE >
+			{
+				at.code = "<=";
+			}
+		|< tGE >
+			{
+				at.code = ">=";
+			}
+		|< tNEQ >
+			{
+				at.code = "<>";
+			} 
 	)
 }
+
 /* expresion_simple: (operador_aditivo)? termino (operador_aditivo termino )*
 */
 void expresion_simple (Attributes at) :
@@ -515,29 +545,48 @@ void expresion_simple (Attributes at) :
 }
 {
 	( 
-		(operador_aditivo())? termino() (operador_aditivo() termino() )*
+		(operador_aditivo(at))? termino() (operador_aditivo(at) termino() )*
 	)
 }
 /* termino: factor ( operador_multiplicativo factor ) * 
 */
 void termino () :
 {
-
+	Attributes at = new Attributes();
 }
 {
 	( 
-		factor() ( operador_multiplicativo() factor() ) * 
+		factor() ( operador_multiplicativo(at) factor() ) * 
 	)
 }
 /* operador_multiplicativo: < tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
 */
-void operador_multiplicativo () :
+void operador_multiplicativo (Attributes at) :
 {
 
 }
 {
 	( 
-		< tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
+		< tPROD >
+			{
+				at.code = "*";
+			}
+		|< tMOD >
+			{
+				at.code = "mod";
+			}
+		|< tDIV >
+			{
+				at.code = "div";
+			}
+		|< tAND >
+			{
+				at.code = "and";
+			} 
+		|< tOR >
+			{
+				at.code = "or";
+			}
 	)
 }
 /* factor: < tNOT > factor
@@ -604,7 +653,6 @@ void cabecera_procedimiento(Attributes at):
 	Token t;
 	SymbolProcedure s;
 	Attributes at1 = new Attributes();
-
 }
 {
   	(
@@ -614,21 +662,22 @@ void cabecera_procedimiento(Attributes at):
 				at.initialiseParList();
 				s = new SymbolProcedure(t.image, at.parList);
 				s.nivel = st.level;
-				try{
-					st.insertSymbol(s);
-				}
-				catch (AlreadyDefinedSymbolException e) {
-					ErrorSemantico.deteccion(e, t);
-				}
-
+				
 				st.insertBlock();
+				
 				//hereda el atributo
-				at1.parList = at.parList;
+				at1.initialiseParList();
 			}
 		parametros_formales(at1)
 		< tIS >
 			{
-
+				try{
+					s.parList = at1.parList;
+					st.insertSymbol2(s);
+				}
+				catch (AlreadyDefinedSymbolException e) {
+					ErrorSemantico.deteccion(e, t);
+				}
 			}
 	)
 }
@@ -645,26 +694,27 @@ void cabecera_funcion(Attributes at):
   	(
   	  	< tFUNC > 
 		returnType = tipo_variable() 
-		t = < tID > 
+		t = < tID >
 			{
 				at.initialiseParList();
 				s = new SymbolFunction(t.image, at.parList, returnType);
 				s.nivel = st.level;
-				try{
-					st.insertSymbol(s);
-				}
-				catch (AlreadyDefinedSymbolException e) {
-					ErrorSemantico.deteccion(e, t);
-				}
-
+				
 				st.insertBlock();
+				
 				//hereda el atributo
-				at1.parList = at.parList;
+				at1.initialiseParList();
 			}
 		parametros_formales(at1)
 		< tIS >
 			{
-
+				try{
+					s.parList = at1.parList;
+					st.insertSymbol2(s);
+				}
+				catch (AlreadyDefinedSymbolException e) {
+					ErrorSemantico.deteccion(e, t);
+				}
 			}
 	)
 }
@@ -673,11 +723,11 @@ void cabecera_funcion(Attributes at):
 */
 void parametros_formales(Attributes at):
 {
-
+	
 }
 {
 	< tAP > 
-	(dec_parametros()(< tPYC > dec_parametros())*)? 
+	(dec_parametros(at)(< tPYC > dec_parametros(at))*)? 
 	cerrar_parentesis() 
 }
 
@@ -712,13 +762,20 @@ void lista_una_o_mas_exps():
 }
 /* operador_aditivo: < tPLUS > | < tMINUS >
 */
-void operador_aditivo():
+void operador_aditivo(Attributes at):
 {
 
 }
 {
   	(
-  	  < tPLUS > | < tMINUS >
+  		< tPLUS >
+			{
+				at.code = "+";
+			} 
+		|< tMINUS >
+			{
+				at.code = "-";
+			}
 	)
 }
 /* inst_leer: < tGET > < tAP > id_or_array (< tCOMA > id_or_array)* cerrar_parentesis
