@@ -537,26 +537,50 @@ void operador_relacional (Attributes at) :
 	)
 }
 
-/* expresion_simple: (operador_aditivo)? termino (operador_aditivo termino )*
+/* expresion_simple: ( < tPLUS > | < tMINUS > )? termino (operador_aditivo termino )*
 */
 void expresion_simple (Attributes at) :
+{
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes();
+}
+{
+	( 
+		( < tPLUS > | < tMINUS > )? termino(at1) (operador_aditivo(at2) termino(at3) )*
+	)
+}
+/* operador_aditivo: < tPLUS > | < tMINUS >
+*/
+void operador_aditivo(Attributes at):
 {
 
 }
 {
-	( 
-		(operador_aditivo(at))? termino() (operador_aditivo(at) termino() )*
+  	(
+  		< tPLUS >
+			{
+				at.code = "+";
+			} 
+		|< tMINUS >
+			{
+				at.code = "-";
+			}
+		|< tOR >
+			{
+				at.code = "or";
+			}
 	)
 }
 /* termino: factor ( operador_multiplicativo factor ) * 
 */
-void termino () :
+void termino (Attributes at) :
 {
-	Attributes at = new Attributes();
+	Attributes at1 = new Attributes(), at2 = new Attributes(),
+			   at3 = new Attributes();
 }
-{
+{ 
 	( 
-		factor() ( operador_multiplicativo(at) factor() ) * 
+		factor(at1) ( operador_multiplicativo(at2) factor(at3) ) * 
 	)
 }
 /* operador_multiplicativo: < tPROD >|< tMOD >|< tDIV >|< tAND > | < tOR >
@@ -583,10 +607,6 @@ void operador_multiplicativo (Attributes at) :
 			{
 				at.code = "and";
 			} 
-		|< tOR >
-			{
-				at.code = "or";
-			}
 	)
 }
 /* factor: < tNOT > factor
@@ -602,24 +622,99 @@ void operador_multiplicativo (Attributes at) :
 			| < tTRUE >
 			| < tFALSE >
 */
-void factor () :
+void factor (Attributes at) :
 {
-
+	Token t;
 }
 {
 	( 
-		< tNOT > factor()
-		| < tAP > expresion() cerrar_parentesis()
-		| < tINT2CHAR > < tAP > expresion() cerrar_parentesis()
-		| < tCHAR2INT >	< tAP > expresion() cerrar_parentesis()
+		< tNOT > factor(at)
+			{
+				if (at.type == Symbol.Types.BOOL){
+					at.valBool = !at.valBool;
+					at.isConst = true;
+					at.asignable = false;
+				}else{
+					//ERROR SEMANTICO
+				}
+
+			}
+		| < tAP > expresion(/*at*/)
+			{
+				
+			}
+			cerrar_parentesis()
+		| < tINT2CHAR > < tAP > expresion(/*at*/) 
+			{
+				if (at.type != Symbol.Types.INT) {
+					//ERROR SEMANTICO
+				}else{
+					at.type = Symbol.Types.CHAR;
+					at.asignable = false;
+					at.isConst = true;
+					at.valChar = (char)(at.valInt);
+				}
+			}
+			cerrar_parentesis()
+		| < tCHAR2INT >	< tAP > expresion(/*at*/)
+			{
+				if (at.type != Symbol.Types.CHAR) {
+					//ERROR SEMANTICO
+				}else{
+					at.type = Symbol.Types.INT;
+					at.asignable = false;
+					at.isConst = true;
+					at.valInt = (int)(at.valChar);
+				}
+			} 
+			cerrar_parentesis()
 		| LOOKAHEAD(2) < tID > < tAP > lista_cero_o_mas_exps() cerrar_parentesis()
 		| LOOKAHEAD(2) < tID > < tAC > expresion() cerrar_corchete()
-		| < tID >
-		| < tCONST_INT >
-		| < tCONST_CHAR >
-		| < tCONST_STRING >
+		| t = < tID >
+			{
+				//recuperar el tipo de la variable
+				Symbol s = st.getSymbol(t.image);
+				/*if (at.type == s.type) {
+					at.asignable = true;
+					at.isConst = false;
+					at.
+				}*/
+			} 
+		|t = < tCONST_INT >
+			{
+				at.type = Symbol.Types.INT;
+				at.asignable = false;
+				at.isConst = true;
+				at.valInt = Integer.parseInt(t.image);
+			}
+		|t = < tCONST_CHAR >
+			{
+				at.type = Symbol.Types.CHAR;
+				at.asignable = false;
+				at.isConst = true;
+				at.valChar = t.image.charAt(0);
+			}
+		|t = < tCONST_STRING >
+			{
+				at.type = Symbol.Types.STRING;
+				at.asignable = false;
+				at.isConst = true;
+				at.valString = t.image;
+			}
 		| < tTRUE >
+			{
+				at.type = Symbol.Types.BOOL;
+				at.asignable = false;
+				at.isConst = true;
+				at.valBool = true;
+			}
 		| < tFALSE >
+			{
+				at.type = Symbol.Types.BOOL;
+				at.asignable = false;
+				at.isConst = true;
+				at.valBool = false;
+			}
 	)
 }
 /* bloque_sentencias: < tBEGIN > lista_instrucciones end
@@ -760,24 +855,7 @@ void lista_una_o_mas_exps():
   	  expresion() (< tCOMA > expresion())* 
 	)
 }
-/* operador_aditivo: < tPLUS > | < tMINUS >
-*/
-void operador_aditivo(Attributes at):
-{
 
-}
-{
-  	(
-  		< tPLUS >
-			{
-				at.code = "+";
-			} 
-		|< tMINUS >
-			{
-				at.code = "-";
-			}
-	)
-}
 /* inst_leer: < tGET > < tAP > id_or_array (< tCOMA > id_or_array)* cerrar_parentesis
 */
 void inst_leer() :

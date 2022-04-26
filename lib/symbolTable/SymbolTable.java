@@ -82,6 +82,21 @@ public class SymbolTable {
         }
     }
 
+    //Si un símbolo con el mismo nombre está o es palabra reservada, excepción. 
+    //Si no, se inserta
+    public void insertSymbol2(Symbol s) throws AlreadyDefinedSymbolException {
+        System.out.println("Simbolo introducido: "+ s);
+        if(reservedWords.contains(s.name)) {
+            throw new AlreadyDefinedSymbolException();
+        }
+        HashMap<String, Symbol> currentBlock = st.get(st.size()-2);
+        if (currentBlock.containsKey(s.name)) { // ya está
+            throw new AlreadyDefinedSymbolException();
+        } else {
+            currentBlock.put(s.name, s);
+        }
+    }
+
     //Si no está, excepción. Si está, devuelve su referencia
     public Symbol getSymbol (String name) throws SymbolNotFoundException {
     	Symbol result = findSymbol(name); 

@@ -31,6 +31,7 @@ public class Attributes implements Cloneable {
     public boolean isCompVector;
     //si es una constante, se puede evaluar en tiempo de compilacion
     public boolean isConst;
+    public boolean asignable;
 
     public Attributes() {
         type = Symbol.Types.UNDEFINED;
@@ -47,6 +48,7 @@ public class Attributes implements Cloneable {
         isCompVector = false;
 
         isConst = false;
+        asignable = false;
         //COMPLETAR
     }
 
@@ -68,6 +70,6 @@ public class Attributes implements Cloneable {
     }
 
     public void initialiseParList(){
-        this.parList = new ArrayList<>();
+        this.parList = new ArrayList<Symbol>();
     }
 }
